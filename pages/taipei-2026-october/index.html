@@ -11,202 +11,101 @@
   <meta name="description" content="三日台北行程（10/30–11/1）— 航班、阿樹酒店、Pokemon Center、台北101、士林夜市與已訂餐廳。">
   <style>
     :root {
-      --bg: #fff7fb;
-      --ink: #2a1f2d;
-      --muted: #6d5a66;
-      --card: #ffffff;
-      --line: #f0d4e4;
-      --pink: #ff6b9d;
-      --pink-deep: #e84a7f;
-      --shadow: 0 10px 30px rgba(232, 74, 127, 0.12);
+      --bg: #fff7fb; --ink: #2a1f2d; --muted: #6d5a66; --card: #ffffff; --line: #f0d4e4;
+      --pink: #ff6b9d; --pink-deep: #e84a7f; --shadow: 0 10px 30px rgba(232, 74, 127, 0.12);
       --radius: 20px;
       --font: "Segoe UI", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: var(--font);
-      color: var(--ink);
+      margin: 0; font-family: var(--font); color: var(--ink);
       background:
         radial-gradient(900px 500px at 0% 0%, rgba(255,107,157,0.22), transparent 55%),
         radial-gradient(800px 480px at 100% 10%, rgba(94,184,255,0.2), transparent 50%),
         radial-gradient(700px 400px at 50% 100%, rgba(183,148,246,0.18), transparent 55%),
         var(--bg);
-      min-height: 100vh;
-      line-height: 1.6;
-      font-size: 1.05rem;
+      min-height: 100vh; line-height: 1.6; font-size: 1.05rem;
     }
     a { color: var(--pink-deep); text-decoration: none; font-weight: 650; }
     a:hover { text-decoration: underline; }
     .wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 56px; }
     .home { display: inline-block; margin-bottom: 12px; color: var(--muted); font-size: 0.9rem; font-weight: 600; }
-
-    #gate {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
-    }
+    #gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
     .gate-card {
-      width: min(420px, 100%);
-      background: var(--card);
-      border: 2px solid var(--line);
-      border-radius: 24px;
-      padding: 28px 24px 24px;
-      box-shadow: var(--shadow);
-      text-align: center;
+      width: min(420px, 100%); background: var(--card); border: 2px solid var(--line);
+      border-radius: 24px; padding: 28px 24px 24px; box-shadow: var(--shadow); text-align: center;
     }
     .gate-card .emoji { font-size: 2.6rem; margin-bottom: 8px; }
     .gate-card h1 { margin: 0 0 6px; font-size: 1.45rem; }
     .gate-card p { margin: 0 0 18px; color: var(--muted); font-size: 0.95rem; }
     .gate-card input[type="text"] {
-      width: 100%;
-      padding: 14px 16px;
-      border-radius: 14px;
-      border: 2px solid var(--line);
-      font-size: 1.05rem;
-      font-family: inherit;
-      margin-bottom: 12px;
-      outline: none;
-      background: #fffafc;
+      width: 100%; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--line);
+      font-size: 1.05rem; font-family: inherit; margin-bottom: 12px; outline: none; background: #fffafc;
     }
-    .gate-card input:focus {
-      border-color: var(--pink);
-      box-shadow: 0 0 0 4px rgba(255,107,157,0.18);
-    }
+    .gate-card input:focus { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(255,107,157,0.18); }
     .gate-card button {
-      width: 100%;
-      border: none;
-      border-radius: 999px;
-      padding: 14px 18px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      font-family: inherit;
-      color: #fff;
-      background: linear-gradient(135deg, var(--pink), #b794f6);
-      cursor: pointer;
+      width: 100%; border: none; border-radius: 999px; padding: 14px 18px; font-size: 1.05rem;
+      font-weight: 700; font-family: inherit; color: #fff;
+      background: linear-gradient(135deg, var(--pink), #b794f6); cursor: pointer;
       box-shadow: 0 8px 20px rgba(232, 74, 127, 0.28);
     }
     .gate-error { display: none; margin-top: 12px; color: #c62828; font-size: 0.9rem; font-weight: 600; }
     .gate-error.show { display: block; }
-
     #app { display: none; }
     #app.unlocked { display: block; }
-
     .banner {
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
       background: linear-gradient(135deg, #ff8fb8 0%, #ffb347 45%, #7ec8ff 100%);
-      border-radius: calc(var(--radius) + 6px);
-      padding: 28px 22px 24px;
-      box-shadow: var(--shadow);
-      margin-bottom: 18px;
-      border: 2px solid rgba(255,255,255,0.55);
+      border-radius: calc(var(--radius) + 6px); padding: 28px 22px 24px; box-shadow: var(--shadow);
+      margin-bottom: 18px; border: 2px solid rgba(255,255,255,0.55);
     }
     .banner::after {
-      content: "🌸 ✈️ 🧋 🍜 🎮 🗼 🏨 ✨";
-      position: absolute;
-      right: -8px;
-      bottom: 8px;
-      font-size: 1.35rem;
-      opacity: 0.55;
-      letter-spacing: 0.35em;
-      pointer-events: none;
+      content: "🌸 ✈️ 🧋 🍜 🎮 🗼 🏨 ✨"; position: absolute; right: -8px; bottom: 8px;
+      font-size: 1.35rem; opacity: 0.55; letter-spacing: 0.35em; pointer-events: none;
     }
-    .banner .eyebrow {
-      margin: 0 0 6px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      opacity: 0.85;
-    }
-    .banner h1 {
-      margin: 0 0 8px;
-      font-size: clamp(1.7rem, 5vw, 2.35rem);
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-    }
-    .banner .lede { margin: 0; max-width: 34rem; font-size: 1.02rem; opacity: 0.92; }
+    .banner .eyebrow { margin: 0 0 6px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+    .banner h1 { margin: 0 0 8px; font-size: clamp(1.7rem, 5vw, 2.35rem); letter-spacing: -0.02em; line-height: 1.15; }
+    .banner .lede { margin: 0; max-width: 36rem; font-size: 1.02rem; opacity: 0.92; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
     .chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 7px 12px; border-radius: 999px;
-      background: rgba(255,255,255,0.72);
-      border: 1px solid rgba(255,255,255,0.9);
-      font-size: 0.88rem; font-weight: 650;
+      display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px;
+      background: rgba(255,255,255,0.72); border: 1px solid rgba(255,255,255,0.9); font-size: 0.88rem; font-weight: 650;
     }
-
     .grid { display: grid; gap: 12px; margin-bottom: 16px; }
     @media (min-width: 640px) { .grid.two { grid-template-columns: 1fr 1fr; } }
-    .card {
-      background: var(--card);
-      border: 2px solid var(--line);
-      border-radius: var(--radius);
-      padding: 18px 16px;
-      box-shadow: var(--shadow);
-    }
+    .card { background: var(--card); border: 2px solid var(--line); border-radius: var(--radius); padding: 18px 16px; box-shadow: var(--shadow); }
     .card h2 { margin: 0 0 10px; font-size: 1.15rem; }
     .meta { margin: 0 0 4px; font-size: 1rem; }
     .addr { margin: 0; color: var(--muted); font-size: 0.95rem; }
     .links { display: inline-block; margin-top: 6px; font-size: 0.92rem; }
-    .links a { margin-right: 2px; }
-
-    .day {
-      background: var(--card);
-      border: 2px solid var(--line);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      margin-bottom: 14px;
-    }
+    .contact { margin-top: 6px; color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+    .contact .hours, .contact .phone { display: block; }
+    .day { background: var(--card); border: 2px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); margin-bottom: 14px; }
     .day-head {
-      display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
-      gap: 6px 12px; padding: 14px 16px;
-      background: linear-gradient(90deg, rgba(255,107,157,0.16), rgba(94,184,255,0.12));
+      display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px;
+      padding: 14px 16px; background: linear-gradient(90deg, rgba(255,107,157,0.16), rgba(94,184,255,0.12));
       border-bottom: 2px solid var(--line);
     }
     .day-head h2 { margin: 0; font-size: 1.25rem; }
     .day-head .date { color: var(--muted); font-size: 0.98rem; font-weight: 600; }
     .timeline { list-style: none; margin: 0; padding: 4px 0; }
-    .timeline li {
-      display: grid;
-      grid-template-columns: 72px 1fr;
-      gap: 10px;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-    }
+    .timeline li { display: grid; grid-template-columns: 72px 1fr; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
     .timeline li:last-child { border-bottom: none; }
-    .time {
-      font-variant-numeric: tabular-nums;
-      color: var(--pink-deep);
-      font-weight: 800;
-      font-size: 1rem;
-      padding-top: 2px;
-    }
+    .time { font-variant-numeric: tabular-nums; color: var(--pink-deep); font-weight: 800; font-size: 1rem; padding-top: 2px; }
     .item-title { margin: 0 0 4px; font-weight: 750; font-size: 1.05rem; }
     .item-note { margin: 0; color: var(--muted); font-size: 0.95rem; }
     .badge {
-      display: inline-block; margin-left: 6px; padding: 2px 9px; border-radius: 999px;
-      font-size: 0.72rem; font-weight: 800; vertical-align: middle;
-      background: rgba(62,207,142,0.18); color: #1b8a55; border: 1px solid rgba(62,207,142,0.4);
+      display: inline-block; margin-left: 6px; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 800;
+      vertical-align: middle; background: rgba(62,207,142,0.18); color: #1b8a55; border: 1px solid rgba(62,207,142,0.4);
     }
     .places { display: grid; gap: 10px; }
     @media (min-width: 560px) { .places { grid-template-columns: 1fr 1fr; } }
-    .place {
-      background: linear-gradient(180deg, #fffafc, #fff);
-      border: 1.5px dashed var(--line);
-      border-radius: 14px;
-      padding: 12px 14px;
-    }
+    .place { background: linear-gradient(180deg, #fffafc, #fff); border: 1.5px dashed var(--line); border-radius: 14px; padding: 12px 14px; }
     .place h3 { margin: 0 0 4px; font-size: 1rem; }
     .place p { margin: 0 0 6px; color: var(--muted); font-size: 0.9rem; }
     .foot { margin-top: 22px; text-align: center; color: var(--muted); font-size: 0.85rem; }
-    @media (max-width: 420px) {
-      body { font-size: 1rem; }
-      .timeline li { grid-template-columns: 58px 1fr; padding: 12px; }
-    }
+    .note-warn { color: #b54708; font-weight: 650; }
+    @media (max-width: 420px) { body { font-size: 1rem; } .timeline li { grid-template-columns: 58px 1fr; padding: 12px; } }
   </style>
 </head>
 <body>
@@ -228,7 +127,7 @@
     <header class="banner">
       <p class="eyebrow">Taipei trip · Oct 2026</p>
       <h1>🇹🇼 台北三日行程</h1>
-      <p class="lede">10/30（五）→ 11/1（日）· 航班、酒店、景點同已訂餐廳（Plan only）· 各地有官網／地圖連結</p>
+      <p class="lede">10/30（五）→ 11/1（日）· 各地有官網／地圖／營業時間／電話（Plan only）</p>
       <div class="chips">
         <span class="chip">✈️ CI901 去程</span>
         <span class="chip">✈️ CI915 回程</span>
@@ -247,194 +146,83 @@
         <h2>🏨 酒店</h2>
         <p class="meta"><strong>台北阿樹國際旅店</strong></p>
         <p class="addr">八德路三段76號1樓，松山區，台北 10558</p>
-        <p class="addr">📞 +886-2-25787728</p>
         <span class="links"><a href="https://www.artreehotel.com.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E9%98%BF%E6%A8%B9%E5%9C%8B%E9%9A%9B%E6%97%85%E5%BA%97%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B576%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 櫃台／大廳 24 小時</span><br><span class="phone">📞 +886-2-2578-7728</span></div>
       </section>
     </div>
 
     <article class="day">
-      <div class="day-head">
-        <h2>📅 Day 1 · 抵台</h2>
-        <span class="date">30/10（五）</span>
-      </div>
+      <div class="day-head"><h2>📅 Day 1 · 抵台</h2><span class="date">30/10（五）</span></div>
       <ul class="timeline">
-        <li>
-          <div class="time">11:10</div>
-          <div>
-            <p class="item-title">✈️ CI901 起飛</p>
-            <p class="item-note">約 12:55 到達</p>
-          </div>
-        </li>
-        <li>
-          <div class="time">15:00</div>
-          <div>
-            <p class="item-title">🏨 酒店 check-in · 阿樹國際旅店</p>
-            <p class="item-note">松山區八德路三段</p>
-            <span class="links"><a href="https://www.artreehotel.com.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E9%98%BF%E6%A8%B9%E5%9C%8B%E9%9A%9B%E6%97%85%E5%BA%97%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B576%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
-        <li>
-          <div class="time">16:00</div>
-          <div>
-            <p class="item-title">🎮 Uber 往 Pokemon Center</p>
-            <p class="item-note">約 15 分鐘 · 新光三越台北信義新天地 A11 3F</p>
-            <span class="links"><a href="https://tw.portal-pokemon.com/shop/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=Pok%C3%A9mon%20Center%20TAIPEI%20%E6%96%B0%E5%85%89%E4%B8%89%E8%B6%8A%E5%8F%B0%E5%8C%97%E4%BF%A1%E7%BE%A9%E6%96%B0%E5%A4%A9%E5%9C%B0A11" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
-        <li>
-          <div class="time">18:00</div>
-          <div>
-            <p class="item-title">🗼 步行往台北 101</p>
-            <p class="item-note">約 5 分鐘</p>
-            <span class="links"><a href="https://www.taipei-101.com.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97101" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
-        <li>
-          <div class="time">19:00</div>
-          <div>
-            <p class="item-title">🍖 胡同燒肉 5 號店 <span class="badge">已訂</span></p>
-            <p class="item-note">信義區松壽路 22 號 2 樓 · 之後 Uber 返酒店</p>
-            <span class="links"><a href="https://www.gyenhutong.com.tw/store/display/7" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E8%83%A1%E5%90%8C%E7%87%92%E8%82%895%E8%99%9F%E5%BA%97%20%E6%9D%BE%E5%A3%BD%E8%B7%AF22%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
+        <li><div class="time">11:10</div><div><p class="item-title">✈️ CI901 起飛</p><p class="item-note">約 12:55 到達</p></div></li>
+        <li><div class="time">15:00</div><div><p class="item-title">🏨 酒店 check-in · 阿樹國際旅店</p><p class="item-note">松山區八德路三段</p><span class="links"><a href="https://www.artreehotel.com.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E9%98%BF%E6%A8%B9%E5%9C%8B%E9%9A%9B%E6%97%85%E5%BA%97%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B576%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 櫃台／大廳 24 小時</span><br><span class="phone">📞 +886-2-2578-7728</span></div></div></li>
+        <li><div class="time">16:00</div><div><p class="item-title">🎮 Uber 往 Pokemon Center</p><p class="item-note">約 15 分鐘 · 新光三越台北信義新天地 A11 3F</p><span class="links"><a href="https://tw.portal-pokemon.com/shop/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=Pok%C3%A9mon%20Center%20TAIPEI%20%E6%96%B0%E5%85%89%E4%B8%89%E8%B6%8A%E5%8F%B0%E5%8C%97%E4%BF%A1%E7%BE%A9%E6%96%B0%E5%A4%A9%E5%9C%B0A11" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 日–四 11:00–21:30；五–六 11:00–22:00（以新光三越告示為準）</span><br><span class="phone">📞 02-8780-1000（新光三越 A11 店洽）</span></div></div></li>
+        <li><div class="time">18:00</div><div><p class="item-title">🗼 步行往台北 101</p><p class="item-note">約 5 分鐘</p><span class="links"><a href="https://www.taipei-101.com.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97101" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 購物中心：日–四 11:00–21:30；五–六／假日前夕 11:00–22:00｜觀景台：每日約 10:00–21:00</span><br><span class="phone">📞 購物中心 02-8101-8800；大樓 02-8101-8101</span></div></div></li>
+        <li><div class="time">19:00</div><div><p class="item-title">🍖 胡同燒肉 5 號店 <span class="badge">已訂</span></p><p class="item-note">信義區松壽路 22 號 2 樓 · 之後 Uber 返酒店</p><span class="links"><a href="https://www.gyenhutong.com.tw/store/display/7" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E8%83%A1%E5%90%8C%E7%87%92%E8%82%895%E8%99%9F%E5%BA%97%20%E6%9D%BE%E5%A3%BD%E8%B7%AF22%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 午 11:30–14:30；晚 日–四 17:30–23:30、五–六 17:30–00:00</span><br><span class="phone">📞 02-2723-8838</span></div></div></li>
       </ul>
     </article>
 
     <article class="day">
-      <div class="day-head">
-        <h2>📅 Day 2 · 市區＋士林</h2>
-        <span class="date">31/10（六）</span>
-      </div>
+      <div class="day-head"><h2>📅 Day 2 · 市區＋士林</h2><span class="date">31/10（六）</span></div>
       <ul class="timeline">
-        <li>
-          <div class="time">09:00</div>
-          <div>
-            <p class="item-title">🥐 小朝日和（早餐）</p>
-            <p class="item-note">步行約 3 分鐘 · 松山區八德路三段 12 巷 5 弄 17 號 1 樓</p>
-            <span class="links"><a href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E6%9C%9D%E6%97%A5%E5%92%8C%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B512%E5%B7%B75%E5%BC%8417%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
-        <li>
-          <div class="time">10:00</div>
-          <div>
-            <p class="item-title">🚇 捷運往台電大樓站</p>
-            <p class="item-note">約 35 分鐘</p>
-          </div>
-        </li>
-        <li>
-          <div class="time">11:00</div>
-          <div>
-            <p class="item-title">✨ 小太陽皮紋檢測 <span class="badge">Booking 11:00</span></p>
-            <p class="item-note">羅斯福路三段 125 號 8 樓</p>
-            <span class="links"><a href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E5%A4%AA%E9%99%BD%E7%9A%AE%E7%B4%8B%E6%AA%A2%E6%B8%AC%20%E7%BE%85%E6%96%AF%E7%A6%8F%E8%B7%AF%E4%B8%89%E6%AE%B5125%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
-        <li>
-          <div class="time">12:00</div>
-          <div>
-            <p class="item-title">🧸 捷運往 Chiikawa shop · 中山站</p>
-            <p class="item-note">約 25 分鐘 · 中山區長安西路 19 號 2 樓</p>
-            <span class="links"><a href="https://chiikawa-info.jp/ck_w/taipei/index.html" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=CHIIKAWA%20SHOP%20%E9%95%B7%E5%AE%89%E8%A5%BF%E8%B7%AF19%E8%99%9F%20%E5%8F%B0%E5%8C%97" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
-        <li>
-          <div class="time">12:30</div>
-          <div>
-            <p class="item-title">🍲 築間幸福鍋物（南京二店） <span class="badge">已訂</span></p>
-            <p class="item-note">中山區南京東路一段 138 號 2 樓</p>
-            <span class="links"><a href="https://jhujian.com.tw/jhujianshabu/tw" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E7%AF%89%E9%96%93%E5%B9%B8%E7%A6%8F%E9%8D%8B%E7%89%A9%20%E5%8D%97%E4%BA%AC%E6%9D%B1%E8%B7%AF%E4%B8%80%E6%AE%B5138%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
-        <li>
-          <div class="time">15:00</div>
-          <div>
-            <p class="item-title">🎠 Uber 往市立兒童新樂園</p>
-            <p class="item-note">士林區承德路五段 55 號</p>
-            <span class="links"><a href="https://www.tcap.taipei/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B8%82%E7%AB%8B%E5%85%92%E7%AB%A5%E6%96%B0%E6%A8%82%E5%9C%92%20%E6%89%BF%E5%BE%B7%E8%B7%AF%E4%BA%94%E6%AE%B555%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
-        <li>
-          <div class="time">18:00</div>
-          <div>
-            <p class="item-title">🌃 士林夜市（劍潭站）</p>
-            <p class="item-note">備註：9 份芋圓 · 之後 Uber 返酒店（約 20 分鐘）</p>
-            <span class="links"><a href="https://www.travel.taipei/zh-tw/attraction/details/1536" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%A3%AB%E6%9E%97%E5%A4%9C%E5%B8%82" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
+        <li><div class="time">09:00</div><div><p class="item-title">🥐 小朝日和（早餐）</p><p class="item-note">步行約 3 分鐘 · 松山區八德路三段 12 巷 5 弄 17 號 1 樓</p><span class="links"><a href="https://1095food.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E6%9C%9D%E6%97%A5%E5%92%8C%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B512%E5%B7%B75%E5%BC%8417%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 一–五 07:00–14:00；六–日 07:00–13:30（以官網當日為準）</span><br><span class="phone">📞 0928-029-772</span></div></div></li>
+        <li><div class="time">10:00</div><div><p class="item-title">🚇 捷運往台電大樓站</p><p class="item-note">約 35 分鐘</p></div></li>
+        <li><div class="time">11:00</div><div><p class="item-title">✨ 小太陽皮紋檢測 <span class="badge">Booking 11:00</span></p><p class="item-note">羅斯福路三段 125 號 8 樓</p><span class="links"><a href="https://www.sungarden.com.tw" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E5%A4%AA%E9%99%BD%E7%9A%AE%E7%B4%8B%E6%AA%A2%E6%B8%AC%20%E7%BE%85%E6%96%AF%E7%A6%8F%E8%B7%AF%E4%B8%89%E6%AE%B5125%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 一–六 約 09:30–17:00；週日休息（預約制）</span><br><span class="phone">📞 02-2365-8575</span></div></div></li>
+        <li><div class="time">12:00</div><div><p class="item-title">🧸 捷運往 Chiikawa shop · 中山站</p><p class="item-note">約 25 分鐘 · 中山區長安西路 19 號 2 樓</p><span class="links"><a href="https://chiikawa-info.jp/ck_w/taipei/index.html" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=CHIIKAWA%20SHOP%20%E9%95%B7%E5%AE%89%E8%A5%BF%E8%B7%AF19%E8%99%9F%20%E5%8F%B0%E5%8C%97" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 每日 12:00–20:00（最後入場約 19:50）</span><br><span class="phone">📞 02-2559-9800</span></div></div></li>
+        <li><div class="time">12:30</div><div><p class="item-title">🍲 築間幸福鍋物（南京二店） <span class="badge">已訂</span></p><p class="item-note">中山區南京東路一段 138 號 2 樓</p><span class="links"><a href="https://jhujian.com.tw/jhujianshabu/tw/store/detail/%E5%8F%B0%E5%8C%97%E5%8D%97%E4%BA%AC%E4%BA%8C" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E7%AF%89%E9%96%93%E5%B9%B8%E7%A6%8F%E9%8D%8B%E7%89%A9%20%E5%8D%97%E4%BA%AC%E6%9D%B1%E8%B7%AF%E4%B8%80%E6%AE%B5138%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 11:00–03:00（官網據點）</span><br><span class="phone">📞 02-2542-9199</span></div></div></li>
+        <li><div class="time">15:00</div><div><p class="item-title">🎠 Uber 往市立兒童新樂園</p><p class="item-note">士林區承德路五段 55 號 · <span class="note-warn">週六非寒暑假通常 09:00–18:00</span></p><span class="links"><a href="https://www.tcap.taipei/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B8%82%E7%AB%8B%E5%85%92%E7%AB%A5%E6%96%B0%E6%A8%82%E5%9C%92%20%E6%89%BF%E5%BE%B7%E8%B7%AF%E4%BA%94%E6%AE%B555%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 非寒暑假：週一休；二–五 09:00–17:00；六–日 09:00–18:00｜寒暑假／連假多為 09:00–20:00</span><br><span class="phone">📞 遊客中心 02-2833-3823#105/106；代表號 02-2536-3001</span></div></div></li>
+        <li><div class="time">18:00</div><div><p class="item-title">🌃 士林夜市（劍潭站）</p><p class="item-note">備註：9 份芋圓 · 之後 Uber 返酒店（約 20 分鐘）</p><span class="links"><a href="https://www.travel.taipei/zh-tw/attraction/details/1536" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%A3%AB%E6%9E%97%E5%A4%9C%E5%B8%82" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 夜市攤販約 17:00–24:00（攤位不一）</span><br><span class="phone">📞 士林市場 02-2881-5557</span></div></div></li>
       </ul>
     </article>
 
     <article class="day">
-      <div class="day-head">
-        <h2>📅 Day 3 · 返程</h2>
-        <span class="date">01/11（日）</span>
-      </div>
+      <div class="day-head"><h2>📅 Day 3 · 返程</h2><span class="date">01/11（日）</span></div>
       <ul class="timeline">
-        <li>
-          <div class="time">09:00</div>
-          <div>
-            <p class="item-title">🍳 JJ 早安早餐店</p>
-            <p class="item-note">步行約 6 分鐘 · 松山區敦化里八德路三段 12 巷 23 號</p>
-            <span class="links"><a href="https://www.google.com/maps/search/?api=1&query=JJ%E6%97%A9%E5%AE%89%E6%97%A9%E9%A4%90%E5%BA%97%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B512%E5%B7%B723%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-          </div>
-        </li>
-        <li>
-          <div class="time">14:30</div>
-          <div>
-            <p class="item-title">✈️ CI915 起飛</p>
-            <p class="item-note">約 16:35 到達</p>
-          </div>
-        </li>
+        <li><div class="time">09:00</div><div><p class="item-title">🍳 JJ 早安早餐店</p><p class="item-note">步行約 6 分鐘 · 松山區敦化里八德路三段 12 巷 23 號 · <span class="note-warn">第三方資料顯示週日休息，出發前請再確認</span></p><span class="links"><a href="https://www.google.com/maps/search/?api=1&query=JJ%E6%97%A9%E5%AE%89%E6%97%A9%E9%A4%90%E5%BA%97%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B512%E5%B7%B723%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 一–六 約 06:00–12:00；週日休息（第三方資料）</span><br><span class="phone">📞 02-2570-2489</span></div></div></li>
+        <li><div class="time">14:30</div><div><p class="item-title">✈️ CI915 起飛</p><p class="item-note">約 16:35 到達</p></div></li>
       </ul>
     </article>
 
     <section class="card">
       <h2>📍 地點速查</h2>
       <div class="places">
-        <div class="place">
-          <h3>🎮 Pokemon Center</h3>
-          <p>新光三越台北信義新天地 A11 3F</p>
-          <span class="links"><a href="https://tw.portal-pokemon.com/shop/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=Pok%C3%A9mon%20Center%20TAIPEI%20%E6%96%B0%E5%85%89%E4%B8%89%E8%B6%8A%E5%8F%B0%E5%8C%97%E4%BF%A1%E7%BE%A9%E6%96%B0%E5%A4%A9%E5%9C%B0A11" target="_blank" rel="noopener">地圖</a></span>
-        </div>
-        <div class="place">
-          <h3>🗼 台北 101</h3>
-          <p>信義區信義路五段 7 號</p>
-          <span class="links"><a href="https://www.taipei-101.com.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97101" target="_blank" rel="noopener">地圖</a></span>
-        </div>
-        <div class="place">
-          <h3>🍖 胡同燒肉 5 號店</h3>
-          <p>信義區松壽路 22 號 2 樓 · 19:00 已訂</p>
-          <span class="links"><a href="https://www.gyenhutong.com.tw/store/display/7" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E8%83%A1%E5%90%8C%E7%87%92%E8%82%895%E8%99%9F%E5%BA%97%20%E6%9D%BE%E5%A3%BD%E8%B7%AF22%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-        </div>
-        <div class="place">
-          <h3>🍲 築間幸福鍋物（南京二店）</h3>
-          <p>中山區南京東路一段 138 號 2 樓 · 12:30 已訂</p>
-          <span class="links"><a href="https://jhujian.com.tw/jhujianshabu/tw" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E7%AF%89%E9%96%93%E5%B9%B8%E7%A6%8F%E9%8D%8B%E7%89%A9%20%E5%8D%97%E4%BA%AC%E6%9D%B1%E8%B7%AF%E4%B8%80%E6%AE%B5138%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-        </div>
-        <div class="place">
-          <h3>🎠 市立兒童新樂園</h3>
-          <p>士林區承德路五段 55 號</p>
-          <span class="links"><a href="https://www.tcap.taipei/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B8%82%E7%AB%8B%E5%85%92%E7%AB%A5%E6%96%B0%E6%A8%82%E5%9C%92%20%E6%89%BF%E5%BE%B7%E8%B7%AF%E4%BA%94%E6%AE%B555%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-        </div>
-        <div class="place">
-          <h3>🌃 士林夜市</h3>
-          <p>劍潭站一帶</p>
-          <span class="links"><a href="https://www.travel.taipei/zh-tw/attraction/details/1536" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%A3%AB%E6%9E%97%E5%A4%9C%E5%B8%82" target="_blank" rel="noopener">地圖</a></span>
-        </div>
-        <div class="place">
-          <h3>🧸 Chiikawa shop</h3>
-          <p>中山區長安西路 19 號 2 樓</p>
-          <span class="links"><a href="https://chiikawa-info.jp/ck_w/taipei/index.html" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=CHIIKAWA%20SHOP%20%E9%95%B7%E5%AE%89%E8%A5%BF%E8%B7%AF19%E8%99%9F%20%E5%8F%B0%E5%8C%97" target="_blank" rel="noopener">地圖</a></span>
-        </div>
-        <div class="place">
-          <h3>🏨 阿樹國際旅店</h3>
-          <p>松山區八德路三段 76 號</p>
-          <span class="links"><a href="https://www.artreehotel.com.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E9%98%BF%E6%A8%B9%E5%9C%8B%E9%9A%9B%E6%97%85%E5%BA%97%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B576%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
-        </div>
+        <div class="place"><h3>🎮 Pokemon Center</h3><p>新光三越台北信義新天地 A11 3F</p><span class="links"><a href="https://tw.portal-pokemon.com/shop/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=Pok%C3%A9mon%20Center%20TAIPEI%20%E6%96%B0%E5%85%89%E4%B8%89%E8%B6%8A%E5%8F%B0%E5%8C%97%E4%BF%A1%E7%BE%A9%E6%96%B0%E5%A4%A9%E5%9C%B0A11" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 日–四 11:00–21:30；五–六 11:00–22:00（以新光三越告示為準）</span><br><span class="phone">📞 02-8780-1000（新光三越 A11 店洽）</span></div></div>
+        <div class="place"><h3>🗼 台北 101</h3><p>信義區信義路五段 7 號</p><span class="links"><a href="https://www.taipei-101.com.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97101" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 購物中心：日–四 11:00–21:30；五–六／假日前夕 11:00–22:00｜觀景台：每日約 10:00–21:00</span><br><span class="phone">📞 購物中心 02-8101-8800；大樓 02-8101-8101</span></div></div>
+        <div class="place"><h3>🍖 胡同燒肉 5 號店</h3><p>信義區松壽路 22 號 2 樓 · 19:00 已訂</p><span class="links"><a href="https://www.gyenhutong.com.tw/store/display/7" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E8%83%A1%E5%90%8C%E7%87%92%E8%82%895%E8%99%9F%E5%BA%97%20%E6%9D%BE%E5%A3%BD%E8%B7%AF22%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 午 11:30–14:30；晚 日–四 17:30–23:30、五–六 17:30–00:00</span><br><span class="phone">📞 02-2723-8838</span></div></div>
+        <div class="place"><h3>🍲 築間幸福鍋物（南京二店）</h3><p>中山區南京東路一段 138 號 2 樓 · 12:30 已訂</p><span class="links"><a href="https://jhujian.com.tw/jhujianshabu/tw/store/detail/%E5%8F%B0%E5%8C%97%E5%8D%97%E4%BA%AC%E4%BA%8C" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E7%AF%89%E9%96%93%E5%B9%B8%E7%A6%8F%E9%8D%8B%E7%89%A9%20%E5%8D%97%E4%BA%AC%E6%9D%B1%E8%B7%AF%E4%B8%80%E6%AE%B5138%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 11:00–03:00（官網據點）</span><br><span class="phone">📞 02-2542-9199</span></div></div>
+        <div class="place"><h3>🎠 市立兒童新樂園</h3><p>士林區承德路五段 55 號</p><span class="links"><a href="https://www.tcap.taipei/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E5%B8%82%E7%AB%8B%E5%85%92%E7%AB%A5%E6%96%B0%E6%A8%82%E5%9C%92%20%E6%89%BF%E5%BE%B7%E8%B7%AF%E4%BA%94%E6%AE%B555%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 非寒暑假：週一休；二–五 09:00–17:00；六–日 09:00–18:00｜寒暑假／連假多為 09:00–20:00</span><br><span class="phone">📞 遊客中心 02-2833-3823#105/106；代表號 02-2536-3001</span></div></div>
+        <div class="place"><h3>🌃 士林夜市</h3><p>劍潭站一帶</p><span class="links"><a href="https://www.travel.taipei/zh-tw/attraction/details/1536" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%A3%AB%E6%9E%97%E5%A4%9C%E5%B8%82" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 夜市攤販約 17:00–24:00（攤位不一）</span><br><span class="phone">📞 士林市場 02-2881-5557</span></div></div>
+        <div class="place"><h3>🧸 Chiikawa shop</h3><p>中山區長安西路 19 號 2 樓</p><span class="links"><a href="https://chiikawa-info.jp/ck_w/taipei/index.html" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=CHIIKAWA%20SHOP%20%E9%95%B7%E5%AE%89%E8%A5%BF%E8%B7%AF19%E8%99%9F%20%E5%8F%B0%E5%8C%97" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 每日 12:00–20:00（最後入場約 19:50）</span><br><span class="phone">📞 02-2559-9800</span></div></div>
+        <div class="place"><h3>🏨 阿樹國際旅店</h3><p>松山區八德路三段 76 號</p><span class="links"><a href="https://www.artreehotel.com.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%8F%B0%E5%8C%97%E9%98%BF%E6%A8%B9%E5%9C%8B%E9%9A%9B%E6%97%85%E5%BA%97%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B576%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 櫃台／大廳 24 小時</span><br><span class="phone">📞 +886-2-2578-7728</span></div></div>
+        <div class="place"><h3>🥐 小朝日和</h3><p>八德路三段 12 巷 5 弄 17 號</p><span class="links"><a href="https://1095food.tw/" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E6%9C%9D%E6%97%A5%E5%92%8C%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B512%E5%B7%B75%E5%BC%8417%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 一–五 07:00–14:00；六–日 07:00–13:30（以官網當日為準）</span><br><span class="phone">📞 0928-029-772</span></div></div>
+        <div class="place"><h3>✨ 小太陽皮紋檢測</h3><p>羅斯福路三段 125 號 8 樓</p><span class="links"><a href="https://www.sungarden.com.tw" target="_blank" rel="noopener">官網</a> · <a href="https://www.google.com/maps/search/?api=1&query=%E5%B0%8F%E5%A4%AA%E9%99%BD%E7%9A%AE%E7%B4%8B%E6%AA%A2%E6%B8%AC%20%E7%BE%85%E6%96%AF%E7%A6%8F%E8%B7%AF%E4%B8%89%E6%AE%B5125%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 一–六 約 09:30–17:00；週日休息（預約制）</span><br><span class="phone">📞 02-2365-8575</span></div></div>
+        <div class="place"><h3>🍳 JJ 早安早餐店</h3><p>八德路三段 12 巷 23 號</p><span class="links"><a href="https://www.google.com/maps/search/?api=1&query=JJ%E6%97%A9%E5%AE%89%E6%97%A9%E9%A4%90%E5%BA%97%20%E5%85%AB%E5%BE%B7%E8%B7%AF%E4%B8%89%E6%AE%B512%E5%B7%B723%E8%99%9F" target="_blank" rel="noopener">地圖</a></span>
+            <div class="contact"><span class="hours">🕒 一–六 約 06:00–12:00；週日休息（第三方資料）</span><br><span class="phone">📞 02-2570-2489</span></div></div>
       </div>
     </section>
 
-    <p class="foot">來源：Google Sheet「2026 October - Taipei」· Plan only · 密碼門輕量保護</p>
+    <p class="foot">來源：Google Sheet「2026 October - Taipei」· Plan only · 營業時間／電話以官網或公開資料為準，出發前請再核對</p>
   </div>
 
   <script>
@@ -445,29 +233,17 @@
       var form = document.getElementById("gate-form");
       var input = document.getElementById("pw");
       var err = document.getElementById("gate-error");
-
       function unlock() {
         gate.style.display = "none";
         app.classList.add("unlocked");
         try { sessionStorage.setItem("taipei_plan_ok", "1"); } catch (e) {}
       }
-
-      try {
-        if (sessionStorage.getItem("taipei_plan_ok") === "1") unlock();
-      } catch (e) {}
-
+      try { if (sessionStorage.getItem("taipei_plan_ok") === "1") unlock(); } catch (e) {}
       form.addEventListener("submit", function (e) {
         e.preventDefault();
         var v = (input.value || "").trim().normalize("NFC");
-        var expected = PASS.normalize("NFC");
-        if (v === expected) {
-          err.classList.remove("show");
-          unlock();
-        } else {
-          err.classList.add("show");
-          input.focus();
-          input.select();
-        }
+        if (v === PASS.normalize("NFC")) { err.classList.remove("show"); unlock(); }
+        else { err.classList.add("show"); input.focus(); input.select(); }
       });
     })();
   </script>
