@@ -38,7 +38,7 @@
     .gate-card .emoji { font-size: 2.6rem; margin-bottom: 8px; }
     .gate-card h1 { margin: 0 0 6px; font-size: 1.45rem; }
     .gate-card p { margin: 0 0 18px; color: var(--muted); font-size: 0.95rem; }
-    .gate-card input[type="text"] {
+    .gate-card input[type="password"] {
       width: 100%; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--line);
       font-size: 1.05rem; font-family: inherit; margin-bottom: 12px; outline: none; background: #fffafc;
     }
@@ -115,7 +115,7 @@
       <h1 id="gate-title">台北行程小金庫</h1>
       <p>輸入密碼先睇三日行程～（輕量保護，唔係真・保安）</p>
       <form id="gate-form" autocomplete="off">
-        <input id="pw" type="text" placeholder="請輸入密碼" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus aria-label="密碼">
+        <input id="pw" type="password" placeholder="請輸入密碼" inputmode="text" autocomplete="current-password" autocapitalize="off" spellcheck="false" autofocus aria-label="密碼">
         <button type="submit">開啟行程 ✨</button>
       </form>
       <p class="gate-error" id="gate-error">密碼唔啱呀，再試一次～</p>
