@@ -1,0 +1,9 @@
+{
+  "name": "pub",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-index.mjs",
+    "test": "node --test scripts/build-index.test.mjs"
+  }
+}
