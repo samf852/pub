@@ -208,6 +208,8 @@
   .settings-row input[type="number"] {
     width: 3.5rem;
     font: inherit;
+    -moz-appearance: textfield;
+    appearance: textfield;
     font-weight: 700;
     font-size: 1.05rem;
     text-align: center;
@@ -220,6 +222,11 @@
   .settings-row input[type="number"]:focus {
     outline: 2px solid var(--accent);
     border-color: var(--accent);
+  }
+  .settings-row input[type="number"]::-webkit-inner-spin-button,
+  .settings-row input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
   .settings-row .toggle-answer {
     display: inline-flex;
@@ -569,8 +576,13 @@
     justify-content: center;
     cursor: grab;
     user-select: none;
-    touch-action: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     box-shadow: var(--card-shadow);
+  }
+  .card.tap-ready:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
   .card:active { cursor: grabbing; }
   .card.placeholder { opacity: 0.35; pointer-events: none; }
@@ -823,7 +835,7 @@
       yourAnswer: '你的答案',
       yourAnswerDigits: '你的答案（{d}位數）',
       answerSlotHint: '把選中的數卡拖進各位',
-      answerSlotHintPick: '選 {n} 張數卡拖進各位；其餘留在數卡區',
+      answerSlotHintPick: '選 {n} 張數卡：點一下放入下一位，或拖曳；點答案區的數卡可移回',
       answerNote: '排列見上（最高位在左）',
       answerNoteOrder: '排列見上（{order}）',
       progress: '進度：{step} / {total}',
@@ -835,6 +847,7 @@
       toastDigitsUpdated: '已更新答案位數',
       toastHideAnswerOff: '已關閉顯示答案',
       toastNeedStart: '請先按「開始任務」',
+      toastSlotsFull: '答案位已滿；點選位上的數卡可移回數卡區',
       toastAlreadySubmitted: '這題已提交，請作答新題目',
       toastCorrect: '答對了！做得好！',
       errLeading: '最高位不能是 0！',
@@ -882,7 +895,7 @@
       yourAnswer: 'Your answer',
       yourAnswerDigits: 'Your answer ({n} digits)',
       answerSlotHint: 'Drag chosen cards into each place',
-      answerSlotHintPick: 'Drag {n} cards into the places; leave the rest in the pool.',
+      answerSlotHintPick: 'Use {n} cards: tap to fill each place in order, or drag; tap in the answer to move back.',
       answerNote: 'Digits read left to right (highest place on the left).',
       answerNoteOrder: 'Order: {order}',
       progress: 'Progress: {step} / {total}',
@@ -894,6 +907,7 @@
       toastDigitsUpdated: 'Answer length updated.',
       toastHideAnswerOff: 'Answer reveal turned off.',
       toastNeedStart: 'Tap Start mission first.',
+      toastSlotsFull: 'Answer is full — tap a card in the answer to move it back.',
       toastAlreadySubmitted: 'Already submitted — wait for the next task.',
       toastCorrect: 'Correct — well done!',
       errLeading: 'The leading digit can’t be 0.',
@@ -933,6 +947,9 @@
 
   let puzzle = null;
   let touchDrag = null;
+  let suppressCardClick = false;
+  const TAP_MOVE_PX = 10;
+  const DRAG_ARM_PX = 14;
   let answerDigits = 5;
   let poolSize = 5;
   let rocketStep = 0;
@@ -1390,17 +1407,73 @@
     toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms);
   }
 
+  function isCardInPool(cardEl) {
+    return cardEl.parentElement === poolEl;
+  }
+
+  function findFirstEmptySlot() {
+    const slots = slotsEl.querySelectorAll('.slot');
+    for (const slot of slots) {
+      if (!slot.querySelector('.card')) return slot;
+    }
+    return null;
+  }
+
+  function returnCardToPool(cardEl) {
+    cardEl.classList.remove('placeholder');
+    poolEl.appendChild(cardEl);
+  }
+
+  function onCardTap(cardEl) {
+    const parentSlot = cardEl.parentElement && cardEl.parentElement.dataset.drop === 'slot'
+      ? cardEl.parentElement
+      : null;
+    if (isCardInPool(cardEl)) {
+      const target = findFirstEmptySlot();
+      if (!target) {
+        showToast(t('toastSlotsFull'), 'info');
+        return;
+      }
+      placeCardInSlot(target, cardEl);
+      return;
+    }
+    if (parentSlot) {
+      returnCardToPool(cardEl);
+    }
+  }
+
+  function onCardClick(e) {
+    if (suppressCardClick) {
+      suppressCardClick = false;
+      return;
+    }
+    const el = e.target.closest('.card');
+    if (!el) return;
+    onCardTap(el);
+  }
+
   function createCardEl(digit, cardId) {
     const el = document.createElement('div');
-    el.className = 'card';
+    el.className = 'card tap-ready';
     el.textContent = String(digit);
     el.draggable = true;
+    el.tabIndex = 0;
+    el.setAttribute('role', 'button');
     el.dataset.digit = String(digit);
     el.dataset.cardId = String(cardId);
     el.addEventListener('dragstart', onDragStart);
     el.addEventListener('dragend', onDragEnd);
-    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('click', onCardClick);
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('keydown', onCardKeydown);
     return el;
+  }
+
+  function onCardKeydown(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    const el = e.target.closest('.card');
+    if (el) onCardTap(el);
   }
 
   function renderSlotLabels() {
@@ -1514,11 +1587,12 @@
   function onDragStart(e) {
     const el = e.target.closest('.card');
     if (!el) return;
+    suppressCardClick = true;
     dragPayload = {
       digit: el.dataset.digit,
       el: el,
       fromSlot: el.parentElement.dataset.drop === 'slot' ? el.parentElement.dataset.index : null,
-      fromPool: el.parentElement.id === 'pool'
+      fromPool: isCardInPool(el)
     };
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', el.dataset.digit);
@@ -1529,7 +1603,9 @@
     const el = e.target.closest('.card');
     if (el) el.classList.remove('placeholder');
     document.querySelectorAll('.slot.drag-over').forEach(s => s.classList.remove('drag-over'));
+    poolEl.classList.remove('drag-over');
     dragPayload = null;
+    setTimeout(() => { suppressCardClick = false; }, 0);
   }
 
   function onDragOver(e) {
@@ -1572,50 +1648,74 @@
   poolEl.addEventListener('dragleave', onDragLeave);
   poolEl.addEventListener('drop', onDrop);
 
+  function clearDragHighlights() {
+    document.querySelectorAll('.slot.drag-over').forEach(s => s.classList.remove('drag-over'));
+    poolEl.classList.remove('drag-over');
+  }
+
   function onTouchStart(e) {
     const el = e.target.closest('.card');
-    if (!el) return;
-    e.preventDefault();
+    if (!el || e.touches.length !== 1) return;
+    const touch = e.touches[0];
     touchDrag = {
       el,
       digit: el.dataset.digit,
-      startX: e.touches[0].clientX,
-      startY: e.touches[0].clientY,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      dragging: false,
       fromSlot: el.parentElement.dataset.drop === 'slot' ? el.parentElement.dataset.index : null
     };
-    el.classList.add('placeholder');
 
     function move(ev) {
+      if (!touchDrag || ev.touches.length !== 1) return;
       const t = ev.touches[0];
+      const dx = t.clientX - touchDrag.startX;
+      const dy = t.clientY - touchDrag.startY;
+      const dist = Math.hypot(dx, dy);
+      if (!touchDrag.dragging && dist >= DRAG_ARM_PX) {
+        touchDrag.dragging = true;
+        touchDrag.el.classList.add('placeholder');
+        suppressCardClick = true;
+      }
+      if (!touchDrag.dragging) return;
+      ev.preventDefault();
       const hit = document.elementFromPoint(t.clientX, t.clientY);
-      document.querySelectorAll('.slot.drag-over').forEach(s => s.classList.remove('drag-over'));
+      clearDragHighlights();
       const slot = hit && hit.closest('.slot');
-      const pool = hit && hit.closest('#pool');
       if (slot) slot.classList.add('drag-over');
-      if (pool) pool.classList.add('drag-over');
+      if (hit && hit.closest('#pool')) poolEl.classList.add('drag-over');
     }
 
     function end(ev) {
+      if (!touchDrag) return;
       const t = ev.changedTouches[0];
-      const hit = document.elementFromPoint(t.clientX, t.clientY);
-      const slot = hit && hit.closest('.slot');
-      const pool = hit && hit.closest('#pool');
-      document.querySelectorAll('.slot.drag-over').forEach(s => s.classList.remove('drag-over'));
-      poolEl.classList.remove('drag-over');
-      if (slot && touchDrag) placeCardInSlot(slot, touchDrag.el);
-      else if (pool && touchDrag) {
-        pool.appendChild(touchDrag.el);
-        touchDrag.el.classList.remove('placeholder');
-      } else if (touchDrag) {
-        touchDrag.el.classList.remove('placeholder');
+      const wasDrag = touchDrag.dragging;
+      touchDrag.el.classList.remove('placeholder');
+      clearDragHighlights();
+      if (!wasDrag) {
+        const dx = t.clientX - touchDrag.startX;
+        const dy = t.clientY - touchDrag.startY;
+        if (Math.hypot(dx, dy) < TAP_MOVE_PX) {
+          suppressCardClick = true;
+          onCardTap(touchDrag.el);
+        }
+      } else if (wasDrag) {
+        const hit = document.elementFromPoint(t.clientX, t.clientY);
+        const slot = hit && hit.closest('.slot');
+        const pool = hit && hit.closest('#pool');
+        if (slot) placeCardInSlot(slot, touchDrag.el);
+        else if (pool) returnCardToPool(touchDrag.el);
       }
       touchDrag = null;
       document.removeEventListener('touchmove', move);
       document.removeEventListener('touchend', end);
+      document.removeEventListener('touchcancel', end);
+      setTimeout(() => { suppressCardClick = false; }, 0);
     }
 
-    document.addEventListener('touchmove', move, { passive: true });
+    document.addEventListener('touchmove', move, { passive: false });
     document.addEventListener('touchend', end);
+    document.addEventListener('touchcancel', end);
   }
 
   function getUserAnswer() {
@@ -1703,29 +1803,27 @@
   }
 
   document.getElementById('btn-submit').addEventListener('click', () => {
-    if (!gameStarted) {
-      showToast(t('toastNeedStart'), 'error');
-      return;
-    }
     const { complete, digits } = getUserAnswer();
     if (!complete) {
       showToast(feedbackFor('incomplete'), 'error');
       return;
     }
-    if (lastSubmittedRoundId === puzzle.roundId) {
+    if (gameStarted && lastSubmittedRoundId === puzzle.roundId) {
       showToast(t('toastAlreadySubmitted'), 'error');
       return;
     }
     const result = validateSubmission(digits);
-    lastSubmittedRoundId = puzzle.roundId;
+    if (gameStarted) lastSubmittedRoundId = puzzle.roundId;
     if (result.ok) {
-      onMissionAnswer(true);
+      if (gameStarted) onMissionAnswer(true);
       showToast(t('toastCorrect'), 'success');
     } else {
-      onMissionAnswer(false);
+      if (gameStarted) onMissionAnswer(false);
       showToast(feedbackFor(result.reason), 'error');
     }
-    loadNextQuestion();
+    if (gameStarted) {
+      loadNextQuestion();
+    }
   });
 
   document.getElementById('btn-new').addEventListener('click', () => {
