@@ -70,13 +70,12 @@
   }
   .play-columns {
     display: flex;
-    align-items: stretch;
+    flex-direction: column;
     gap: 1rem;
     margin-bottom: 1rem;
   }
   .play-stack {
-    flex: 1 1 auto;
-    min-width: 0;
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -84,36 +83,47 @@
   .play-stack .panel {
     margin-bottom: 0;
   }
+  body.mission-mode #settings-panel {
+    display: none;
+  }
   .mission-sidebar {
-    flex: 0 0 12.5rem;
-    width: 12.5rem;
+    width: 100%;
     margin-bottom: 0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    gap: 0.5rem;
     box-sizing: border-box;
-    align-self: stretch;
   }
   .mission-sidebar .hint {
-    margin-top: 0;
-    font-size: 0.72rem;
+    margin: 0;
+    font-size: 0.8rem;
     line-height: 1.35;
+    text-align: center;
   }
   .mission-sidebar .panel-title {
-    margin-bottom: 0.2rem;
+    margin-bottom: 0;
+    text-align: center;
   }
-  @media (max-width: 780px) {
-    .play-columns {
-      flex-direction: column;
-    }
-    .mission-sidebar {
-      width: 100%;
-      order: -1;
-    }
-    .mission-track {
-      height: 14rem !important;
-      flex: none !important;
-    }
+  body:not(.mission-mode) .mission-sidebar .panel-title,
+  body:not(.mission-mode) .mission-sidebar > .hint,
+  body:not(.mission-mode) .mission-track-wrap .mission-score,
+  body:not(.mission-mode) .mission-track-wrap .mission-track,
+  body:not(.mission-mode) .mission-reset,
+  body:not(.mission-mode) #btn-exit-mission {
+    display: none;
+  }
+  body:not(.mission-mode) .mission-sidebar {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+  body:not(.mission-mode) .mission-track-wrap {
+    gap: 0;
+  }
+  body:not(.mission-mode) .mission-actions {
+    max-width: 16rem;
+    margin: 0 auto;
   }
   header {
     text-align: center;
@@ -272,10 +282,8 @@
   .mission-track-wrap {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-    flex: 1;
-    min-height: 0;
+    align-items: stretch;
+    gap: 0.5rem;
     width: 100%;
   }
   .mission-score {
@@ -283,65 +291,65 @@
     color: var(--accent-dark);
     font-size: 0.85rem;
     margin: 0;
+    text-align: center;
   }
   .mission-track {
     position: relative;
-    width: 5.5rem;
-    flex: 1 1 auto;
-    min-height: 5.5rem;
-    height: auto;
-    margin: 0.1rem auto 0.25rem;
-    border-radius: 2.75rem;
-    background: linear-gradient(180deg, #0b1d3a 0%, #1a3a5c 45%, #2d6a8f 100%);
+    width: 100%;
+    height: 4.25rem;
+    margin: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #1a5c3a 0%, #1a3a5c 35%, #0b1d3a 70%, #152638 100%);
     border: 3px solid var(--border);
     box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
     overflow: visible;
   }
   .mission-path {
     position: absolute;
-    left: 50%;
-    top: 14%;
-    bottom: 14%;
-    width: 4px;
-    transform: translateX(-50%);
+    left: 12%;
+    right: 12%;
+    top: 50%;
+    height: 4px;
+    transform: translateY(-50%);
     background: repeating-linear-gradient(
-      180deg,
+      90deg,
       rgba(255, 255, 255, 0.35) 0,
-      rgba(255, 255, 255, 0.35) 6px,
-      transparent 6px,
-      transparent 14px
+      rgba(255, 255, 255, 0.35) 8px,
+      transparent 8px,
+      transparent 16px
     );
     border-radius: 2px;
   }
   .mission-moon,
   .mission-earth {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 1.35rem;
-    line-height: 1;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
-  }
-  .mission-moon { top: -0.35rem; }
-  .mission-earth { bottom: -0.35rem; }
-  .mission-rocket {
-    position: absolute;
-    left: 50%;
-    bottom: 10%;
-    transform: translate(-50%, 50%);
+    top: 50%;
+    transform: translateY(-50%);
     font-size: 1.5rem;
     line-height: 1;
-    transition: bottom 0.55s cubic-bezier(0.34, 1.2, 0.64, 1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+    z-index: 1;
+  }
+  .mission-earth { left: 0.35rem; }
+  .mission-moon { right: 0.35rem; }
+  .mission-rocket {
+    position: absolute;
+    top: 50%;
+    left: 12%;
+    transform: translate(-50%, -50%);
+    font-size: 1.65rem;
+    line-height: 1;
+    transition: left 0.55s cubic-bezier(0.34, 1.2, 0.64, 1);
     filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
     z-index: 2;
   }
   .mission-steps {
     position: absolute;
-    left: 0.45rem;
-    top: 14%;
-    bottom: 14%;
+    left: 12%;
+    right: 12%;
+    top: 0.35rem;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: row;
     justify-content: space-between;
     font-size: 0.65rem;
     color: rgba(255, 255, 255, 0.55);
@@ -350,12 +358,21 @@
   }
   .mission-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.3rem;
+    justify-content: center;
+    gap: 0.5rem;
     width: 100%;
-    max-width: 11rem;
+    max-width: 22rem;
+    margin: 0 auto;
     flex-shrink: 0;
+  }
+  body.mission-mode .mission-actions {
+    max-width: 100%;
+  }
+  body.mission-mode .mission-reset {
+    flex: 0 1 auto;
   }
   .mission-start {
     width: 100%;
@@ -635,6 +652,28 @@
       <p id="header-hint">先設定數卡與答案位數，按「開始任務」後作答</p>
     </header>
 
+    <aside class="mission-sidebar panel" aria-labelledby="mission-label">
+      <div class="panel-title" id="mission-label">太空任務</div>
+      <p class="hint">答對向右，答錯向左，10 步到月球</p>
+      <div class="mission-track-wrap">
+        <p class="mission-score" id="mission-score" aria-live="polite">進度：0 / 10</p>
+        <div class="mission-track" id="mission-track">
+          <div class="mission-earth" aria-hidden="true">🌍</div>
+          <div class="mission-path" aria-hidden="true"></div>
+          <div class="mission-steps" aria-hidden="true">
+            <span>0</span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span>10</span>
+          </div>
+          <div class="mission-rocket" id="mission-rocket" role="img" aria-label="火箭位置">🚀</div>
+          <div class="mission-moon" aria-hidden="true">🌕</div>
+        </div>
+        <div class="mission-actions">
+          <button type="button" class="mission-start" id="btn-start-mission">開始任務</button>
+          <button type="button" class="mission-reset" id="btn-exit-mission">退出任務</button>
+        </div>
+      </div>
+    </aside>
+
     <div class="play-columns">
       <div class="play-stack" id="play-stack">
         <section class="panel" id="settings-panel" aria-labelledby="settings-label">
@@ -678,28 +717,6 @@
           <div class="pool" id="pool" data-drop="pool"></div>
         </section>
       </div>
-
-      <aside class="mission-sidebar panel" aria-labelledby="mission-label">
-        <div class="panel-title" id="mission-label">太空任務</div>
-        <p class="hint">答對上升，答錯後退，10 步到月球</p>
-        <div class="mission-track-wrap">
-          <p class="mission-score" id="mission-score" aria-live="polite">進度：0 / 10</p>
-          <div class="mission-track" id="mission-track">
-            <div class="mission-moon" aria-hidden="true">🌕</div>
-            <div class="mission-path" aria-hidden="true"></div>
-            <div class="mission-steps" aria-hidden="true">
-              <span>0</span><span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span><span>10</span>
-            </div>
-            <div class="mission-rocket" id="mission-rocket" role="img" aria-label="火箭位置">🚀</div>
-            <div class="mission-earth" aria-hidden="true">🌍</div>
-          </div>
-          <div class="mission-actions">
-            <button type="button" class="mission-start" id="btn-start-mission">開始任務</button>
-            <button type="button" class="mission-reset" id="btn-exit-mission">退出任務</button>
-          </div>
-        </div>
-      </aside>
     </div>
 
     <div class="actions">
@@ -945,14 +962,15 @@
   let roundId = 0;
   let lastSubmittedRoundId = null;
 
-  function rocketBottomPercent(step) {
+  function rocketLeftPercent(step) {
     const t = step / MOON_STEPS;
-    return 10 + t * 72;
+    return 12 + t * 76;
   }
 
   function updateMissionUI() {
-    const bottom = rocketBottomPercent(rocketStep);
-    missionRocketEl.style.bottom = bottom + '%';
+    const left = rocketLeftPercent(rocketStep);
+    missionRocketEl.style.left = left + '%';
+    missionRocketEl.style.bottom = '';
     missionScoreEl.textContent = '進度：' + rocketStep + ' / ' + MOON_STEPS;
     missionRocketEl.setAttribute('aria-label', '火箭位置：第 ' + rocketStep + ' 步');
   }
@@ -974,7 +992,6 @@
     allowShowAnswerEl.disabled = gameStarted;
     btnNewEl.disabled = gameStarted;
     btnStartMissionEl.disabled = gameStarted;
-    settingsPanelEl.classList.toggle('game-locked', gameStarted);
     if (gameStarted) {
       hideAnswer();
       allowShowAnswerEl.checked = false;
