@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <!--
+  title: 排出位數 — 數卡練習
+  description: 數卡拖放排奇偶極值，含練習模式與太空任務（繁體中文）。
+  -->
+  <title>排出位數 — 數卡練習</title>
+  <meta name="description" content="數卡拖放排奇偶極值，含練習模式與太空任務（繁體中文）。">
+  <!--
+    Rules (課堂邏輯):
+    - Smallest odd: largest odd digit in 個位; 萬千百十 from remaining digits ascending.
+    - Smallest even: largest even digit in 個位; remaining ascending.
+    - Largest odd: smallest odd digit in 個位; remaining descending.
+    - Largest even: smallest even digit in 個位; remaining descending.
+    - Valid number: highest place (left) ≠ 0; 個位 parity checked.
+    - Pool size configurable (≥ answer digit count); pick that many cards for the answer.
+    - Correct answer: min/max among all valid N-digit numbers (parity + leading ≠ 0) from any N chosen cards.
+    - Textbook placement (largest/smallest qualifying 個位, others sorted) is a solving hint, not the grader.
+  -->
+  <style>
+    :root {
+      --bg: #e8f4fc;
+      --panel: #f7fbff;
+      --border: #8ecae6;
+      --accent: #219ebc;
+      --accent-dark: #126782;
+      --card: #ffffff;
+      --card-shadow: 0 2px 6px rgba(18, 103, 130, 0.18);
+      --success: #2a9d8f;
+      --error: #c1121f;
+      --text: #1d3557;
+      --muted: #457b9d;
+    }
+    body.mission-mode {
+      --bg: #0c1524;
+      --panel: #1a2738;
+      --border: #3d5166;
+      --accent: #3db5d8;
+      --accent-dark: #8ed8f0;
+      --card: #f1f6fb;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+      --success: #3ecfad;
+      --error: #ff6b7a;
+      --text: #e8f2fb;
+      --muted: #9db5cc;
+    }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: linear-gradient(165deg, var(--bg) 0%, #d4e9f7 50%, #c5e3f5 100%);
+    color: var(--text);
+    line-height: 1.5;
+    transition: background 0.35s ease, color 0.35s ease;
+  }
+  body.mission-mode {
+    background: linear-gradient(165deg, #060d18 0%, #0f1c2e 45%, #152638 100%);
+  }
+  .app-shell {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 2rem;
+  }
+  .main-wrap {
+    width: 100%;
+  }
+  .play-columns {
+    display: flex;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .play-stack {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .play-stack .panel {
+    margin-bottom: 0;
+  }
+  .mission-sidebar {
+    flex: 0 0 12.5rem;
+    width: 12.5rem;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+    align-self: stretch;
+  }
+  .mission-sidebar .hint {
+    margin-top: 0;
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+  .mission-sidebar .panel-title {
+    margin-bottom: 0.2rem;
+  }
+  @media (max-width: 780px) {
+    .play-columns {
+      flex-direction: column;
+    }
+    .mission-sidebar {
+      width: 100%;
+      order: -1;
+    }
+    .mission-track {
+      height: 14rem !important;
+      flex: none !important;
+    }
+  }
+  header {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+    color: var(--accent-dark);
+  }
+  header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+  .mode-badge {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    border: 2px solid var(--border);
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  .mode-badge.practice {
+    background: rgba(33, 158, 188, 0.14);
+    color: var(--accent-dark);
+  }
+  .mode-badge.mission {
+    background: rgba(61, 181, 216, 0.18);
+    color: var(--accent-dark);
+    border-color: var(--accent);
+    box-shadow: 0 0 14px rgba(61, 181, 216, 0.25);
+  }
+  body.mission-mode .panel {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  }
+  body.mission-mode .pool {
+    background: rgba(8, 16, 28, 0.55);
+  }
+  body.mission-mode .slot {
+    background: rgba(12, 22, 36, 0.75);
+  }
+  body.mission-mode .settings-row input[type="number"] {
+    background: #0f1a28;
+    color: var(--text);
+    border-color: var(--border);
+  }
+  body.mission-mode .panel.game-locked {
+    opacity: 0.88;
+  }
+  body.mission-mode #btn-new:disabled,
+  body.mission-mode #btn-show-answer:disabled {
+    opacity: 0.35;
+    background: #243447;
+    color: var(--muted);
+    border-color: var(--border);
+  }
+  body.mission-mode .mission-reset {
+    background: #243447;
+    color: #ffd6a5;
+    border-color: #c47a32;
+  }
+  body.mission-mode .mission-reset:hover {
+    border-color: #ffb347;
+    color: #fff;
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    font-size: 0.95rem;
+  }
+  .settings-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 600;
+    color: var(--accent-dark);
+  }
+  .settings-row input[type="number"] {
+    width: 3.5rem;
+    font: inherit;
+    font-weight: 700;
+    font-size: 1.05rem;
+    text-align: center;
+    padding: 0.35rem 0.25rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+  }
+  .settings-row input[type="number"]:focus {
+    outline: 2px solid var(--accent);
+    border-color: var(--accent);
+  }
+  .settings-row .toggle-answer {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    color: var(--accent-dark);
+    cursor: pointer;
+    user-select: none;
+  }
+  .settings-row .toggle-answer input {
+    width: 1.05rem;
+    height: 1.05rem;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  #btn-show-answer:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  #btn-show-answer {
+    background: #fff;
+    color: var(--muted);
+    border: 2px solid var(--border);
+  }
+  #btn-show-answer:not(:disabled):hover {
+    color: var(--accent-dark);
+    border-color: var(--accent);
+  }
+  #btn-show-answer.revealed {
+    background: var(--panel);
+    color: var(--accent-dark);
+    border-color: var(--accent);
+  }
+  .answer-reveal {
+    display: none;
+    margin-top: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    background: rgba(42, 157, 143, 0.12);
+    border: 2px dashed var(--success);
+    text-align: center;
+  }
+  .answer-reveal.visible {
+    display: block;
+  }
+  .answer-reveal .answer-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: var(--success);
+    margin: 0.25rem 0 0;
+  }
+  .answer-reveal .answer-note {
+    margin: 0.35rem 0 0;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .mission-track-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+  .mission-score {
+    font-weight: 700;
+    color: var(--accent-dark);
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  .mission-track {
+    position: relative;
+    width: 5.5rem;
+    flex: 1 1 auto;
+    min-height: 5.5rem;
+    height: auto;
+    margin: 0.1rem auto 0.25rem;
+    border-radius: 2.75rem;
+    background: linear-gradient(180deg, #0b1d3a 0%, #1a3a5c 45%, #2d6a8f 100%);
+    border: 3px solid var(--border);
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
+    overflow: visible;
+  }
+  .mission-path {
+    position: absolute;
+    left: 50%;
+    top: 14%;
+    bottom: 14%;
+    width: 4px;
+    transform: translateX(-50%);
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.35) 0,
+      rgba(255, 255, 255, 0.35) 6px,
+      transparent 6px,
+      transparent 14px
+    );
+    border-radius: 2px;
+  }
+  .mission-moon,
+  .mission-earth {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.35rem;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+  }
+  .mission-moon { top: -0.35rem; }
+  .mission-earth { bottom: -0.35rem; }
+  .mission-rocket {
+    position: absolute;
+    left: 50%;
+    bottom: 10%;
+    transform: translate(-50%, 50%);
+    font-size: 1.5rem;
+    line-height: 1;
+    transition: bottom 0.55s cubic-bezier(0.34, 1.2, 0.64, 1);
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+    z-index: 2;
+  }
+  .mission-steps {
+    position: absolute;
+    left: 0.45rem;
+    top: 14%;
+    bottom: 14%;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 600;
+    pointer-events: none;
+  }
+  .mission-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    width: 100%;
+    max-width: 11rem;
+    flex-shrink: 0;
+  }
+  .mission-start {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 0.45rem 0.65rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-family: inherit;
+    box-shadow: 0 3px 8px rgba(33, 158, 188, 0.35);
+  }
+  .mission-start:hover { background: var(--accent-dark); }
+  .mission-start:disabled {
+    display: none;
+  }
+  .mission-reset {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.65rem;
+    background: #fff;
+    color: var(--accent-dark);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .mission-reset:hover {
+    border-color: var(--accent);
+  }
+  .panel.game-locked {
+    opacity: 0.72;
+  }
+  .panel.game-locked input:disabled,
+  .panel.game-locked label.toggle-answer {
+    cursor: not-allowed;
+  }
+  .celebration {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(11, 29, 58, 0.72);
+  }
+  .celebration.active {
+    display: flex;
+  }
+  #fireworks-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .celebration-card {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem 2.25rem;
+    border-radius: 16px;
+    background: linear-gradient(160deg, #fff8e7 0%, #ffe8cc 100%);
+    border: 3px solid #f9c74f;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    max-width: min(90vw, 22rem);
+    animation: celebrate-pop 0.5s ease;
+  }
+  @keyframes celebrate-pop {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .celebration-card h2 {
+    margin: 0;
+    font-size: 2rem;
+    color: #e76f51;
+  }
+  .celebration-card p {
+    margin: 0.65rem 0 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  #btn-close-celebration {
+    background: var(--accent);
+    color: #fff;
+    padding: 0.65rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .panel {
+    background: var(--panel);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(33, 158, 188, 0.08);
+  }
+  .panel-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.35rem;
+  }
+  .requirement {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    text-align: center;
+    padding: 0.5rem 0;
+  }
+  .slots-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    margin: 0.75rem 0 0.25rem;
+  }
+  .slot-labels {
+    display: flex;
+    justify-content: center;
+    gap: 0.45rem;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+  .slot-labels span {
+    width: 52px;
+    text-align: center;
+  }
+  .slot-labels.dense span {
+    width: 2.15rem;
+    font-size: 0.6rem;
+  }
+  .slots-row.dense {
+    gap: 0.3rem;
+  }
+  .slots-row.dense .slot,
+  .slots-row.dense .card {
+    width: 2.15rem;
+    height: 52px;
+    font-size: 1.25rem;
+  }
+  .slot {
+    width: 52px;
+    height: 58px;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.65);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .slot.drag-over {
+    border-color: var(--accent);
+    background: #d8f0f8;
+  }
+  .pool {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    min-height: 70px;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    transition: background 0.15s, border-color 0.15s;
+    border: 2px solid transparent;
+  }
+  .pool.drag-over {
+    background: #d8f0f8;
+    border-color: var(--accent);
+  }
+  .card {
+    width: 52px;
+    height: 58px;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    background: var(--card);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    box-shadow: var(--card-shadow);
+  }
+  .card:active { cursor: grabbing; }
+  .card.placeholder { opacity: 0.35; pointer-events: none; }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+  button {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.65rem 1.25rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.15s;
+  }
+  button:active { transform: scale(0.98); }
+  #btn-submit {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(33, 158, 188, 0.35);
+  }
+  #btn-submit:hover { background: var(--accent-dark); }
+  #btn-new {
+    background: #fff;
+    color: var(--accent-dark);
+    border: 2px solid var(--border);
+  }
+  #btn-new:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  #toast {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 1.5rem;
+    margin: 0 auto;
+    width: fit-content;
+    max-width: min(90vw, 22rem);
+    transform: translateY(150%);
+    opacity: 0;
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+    z-index: 100;
+    transition: transform 0.35s ease, opacity 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    pointer-events: none;
+  }
+  #toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  #toast.success { background: var(--success); color: #fff; }
+  #toast.error { background: var(--error); color: #fff; }
+  #toast.info { background: var(--accent-dark); color: #fff; }
+  .hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <main class="main-wrap">
+    <header>
+      <h1>數學練習：排出位數</h1>
+      <span class="mode-badge practice" id="mode-badge" role="status">練習模式</span>
+      <p id="header-hint">先設定數卡與答案位數，按「開始任務」後作答</p>
+    </header>
+
+    <div class="play-columns">
+      <div class="play-stack" id="play-stack">
+        <section class="panel" id="settings-panel" aria-labelledby="settings-label">
+          <div class="panel-title" id="settings-label">設定</div>
+          <div class="settings-row">
+            <label for="answer-digits">
+              答案位數
+              <input type="number" id="answer-digits" min="3" max="7" value="5" inputmode="numeric" aria-describedby="settings-hint" />
+            </label>
+            <label for="card-count">
+              數卡數量
+              <input type="number" id="card-count" min="5" max="12" value="5" inputmode="numeric" aria-describedby="settings-hint" />
+            </label>
+            <label class="toggle-answer">
+              <input type="checkbox" id="allow-show-answer" />
+              允許顯示答案
+            </label>
+            <span class="hint" id="settings-hint" style="margin:0">數卡不少於答案位數，選其中與答案位數相同張數作答</span>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="req-label">
+          <div class="panel-title" id="req-label">題目</div>
+          <div class="requirement" id="requirement" role="status">載入中…</div>
+          <div class="answer-reveal" id="answer-reveal" aria-hidden="true">
+            <div class="panel-title">參考答案</div>
+            <p class="answer-value" id="answer-text"></p>
+            <p class="answer-note" id="answer-note">排列見上（最高位在左）</p>
+          </div>
+        </section>
+
+        <section class="panel" id="answer-panel">
+          <div class="panel-title" id="answer-panel-title">你的答案</div>
+          <div class="slot-labels" id="slot-labels" aria-hidden="true"></div>
+          <div class="slots-row" id="slots"></div>
+          <p class="hint" id="answer-slot-hint">把選中的數卡拖進各位</p>
+        </section>
+
+        <section class="panel" id="pool-panel">
+          <div class="panel-title">數卡</div>
+          <div class="pool" id="pool" data-drop="pool"></div>
+        </section>
+      </div>
+
+      <aside class="mission-sidebar panel" aria-labelledby="mission-label">
+        <div class="panel-title" id="mission-label">太空任務</div>
+        <p class="hint">答對上升，答錯後退，10 步到月球</p>
+        <div class="mission-track-wrap">
+          <p class="mission-score" id="mission-score" aria-live="polite">進度：0 / 10</p>
+          <div class="mission-track" id="mission-track">
+            <div class="mission-moon" aria-hidden="true">🌕</div>
+            <div class="mission-path" aria-hidden="true"></div>
+            <div class="mission-steps" aria-hidden="true">
+              <span>0</span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span>10</span>
+            </div>
+            <div class="mission-rocket" id="mission-rocket" role="img" aria-label="火箭位置">🚀</div>
+            <div class="mission-earth" aria-hidden="true">🌍</div>
+          </div>
+          <div class="mission-actions">
+            <button type="button" class="mission-start" id="btn-start-mission">開始任務</button>
+            <button type="button" class="mission-reset" id="btn-exit-mission">退出任務</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="btn-submit">提交</button>
+      <button type="button" id="btn-show-answer" disabled>顯示答案</button>
+      <button type="button" id="btn-new">新題目</button>
+    </div>
+    </main>
+  </div>
+  <div id="toast" role="alert" aria-live="polite"></div>
+
+  <div id="celebration" class="celebration" aria-hidden="true" role="dialog" aria-labelledby="celebration-title">
+    <canvas id="fireworks-canvas" aria-hidden="true"></canvas>
+    <div class="celebration-card">
+      <h2 id="celebration-title">恭喜！</h2>
+      <p>你成功帶火箭登陸月球！</p>
+      <button type="button" id="btn-close-celebration">太棒了！</button>
+    </div>
+  </div>
+
+  <script>
+(function () {
+  'use strict';
+
+  const PARITY = { odd: 'odd', even: 'even' };
+  const EXTREMUM = { min: 'min', max: 'max' };
+
+  const MIN_ANSWER_DIGITS = 3;
+  const MAX_ANSWER_DIGITS = 7;
+  const MIN_POOL_FLOOR = 3;
+  const MAX_POOL = 12;
+  const MOON_STEPS = 10;
+
+  let puzzle = null;
+  let touchDrag = null;
+  let answerDigits = 5;
+  let poolSize = 5;
+  let rocketStep = 0;
+  let gameStarted = false;
+
+  const missionScoreEl = document.getElementById('mission-score');
+  const btnStartMissionEl = document.getElementById('btn-start-mission');
+  const btnNewEl = document.getElementById('btn-new');
+  const settingsPanelEl = document.getElementById('settings-panel');
+  const modeBadgeEl = document.getElementById('mode-badge');
+  const headerHintEl = document.getElementById('header-hint');
+  const missionRocketEl = document.getElementById('mission-rocket');
+  const celebrationEl = document.getElementById('celebration');
+  const fireworksCanvas = document.getElementById('fireworks-canvas');
+  let fireworksRaf = null;
+  let fireworksParticles = [];
+
+  function isOdd(d) { return d % 2 === 1; }
+  function isEven(d) { return d % 2 === 0; }
+
+  function permutationsUnique(arr) {
+    const results = [];
+    const used = new Array(arr.length).fill(false);
+    const path = [];
+    function dfs() {
+      if (path.length === arr.length) {
+        results.push(path.slice());
+        return;
+      }
+      const seen = new Set();
+      for (let i = 0; i < arr.length; i++) {
+        if (used[i] || seen.has(arr[i])) continue;
+        seen.add(arr[i]);
+        used[i] = true;
+        path.push(arr[i]);
+        dfs();
+        path.pop();
+        used[i] = false;
+      }
+    }
+    dfs();
+    return results;
+  }
+
+  function digitCountZh(n) {
+    const map = { 3: '三', 4: '四', 5: '五', 6: '六', 7: '七' };
+    return map[n] || String(n);
+  }
+
+  function placeLabelsFor(n) {
+    const table = {
+      3: ['百', '十', '個'],
+      4: ['千', '百', '十', '個'],
+      5: ['萬', '千', '百', '十', '個'],
+      6: ['十萬', '萬', '千', '百', '十', '個'],
+      7: ['百萬', '十萬', '萬', '千', '百', '十', '個']
+    };
+    if (table[n]) return table[n].slice();
+    return Array.from({ length: n }, (_, i) => '第' + (i + 1));
+  }
+
+  function allValidNumbers(cards, parity) {
+    const perms = permutationsUnique(cards);
+    const last = cards.length - 1;
+    return perms.filter(p => {
+      if (p[0] === 0) return false;
+      const ones = p[last];
+      if (parity === PARITY.odd) return isOdd(ones);
+      return isEven(ones);
+    });
+  }
+
+  function combinations(arr, k) {
+    const res = [];
+    const chosen = [];
+    function pick(start) {
+      if (chosen.length === k) {
+        res.push(chosen.slice());
+        return;
+      }
+      for (let i = start; i <= arr.length - (k - chosen.length); i++) {
+        chosen.push(arr[i]);
+        pick(i + 1);
+        chosen.pop();
+      }
+    }
+    pick(0);
+    return res;
+  }
+
+  function solveFromPool(pool, parity, extremum) {
+    let bestAnswer = null;
+    let bestNum = null;
+    for (const sub of combinations(pool, answerDigits)) {
+      const valids = allValidNumbers(sub, parity);
+      for (const p of valids) {
+        const num = parseInt(p.join(''), 10);
+        if (bestAnswer === null) {
+          bestAnswer = p;
+          bestNum = num;
+        } else if (extremum === EXTREMUM.min && num < bestNum) {
+          bestAnswer = p;
+          bestNum = num;
+        } else if (extremum === EXTREMUM.max && num > bestNum) {
+          bestAnswer = p;
+          bestNum = num;
+        }
+      }
+    }
+    if (!bestAnswer) return null;
+    return { answer: bestAnswer, targetNum: bestNum };
+  }
+
+  function extremumBoundsFromPool(pool, parity) {
+    let minN = null;
+    let maxN = null;
+    for (const sub of combinations(pool, answerDigits)) {
+      const valids = allValidNumbers(sub, parity);
+      for (const p of valids) {
+        const n = parseInt(p.join(''), 10);
+        if (minN === null || n < minN) minN = n;
+        if (maxN === null || n > maxN) maxN = n;
+      }
+    }
+    return { minN, maxN };
+  }
+
+  function randomPool(size) {
+    const cards = [];
+    for (let i = 0; i < size; i++) {
+      cards.push(Math.floor(Math.random() * 10));
+    }
+    return cards;
+  }
+
+  function notAllZeros(cards) {
+    return cards.some(d => d !== 0);
+  }
+
+  function generatePuzzle(size) {
+    for (let attempt = 0; attempt < 600; attempt++) {
+      const cards = randomPool(size);
+      if (!notAllZeros(cards)) continue;
+      const parity = Math.random() < 0.5 ? PARITY.odd : PARITY.even;
+      const extremum = Math.random() < 0.5 ? EXTREMUM.min : EXTREMUM.max;
+      const solved = solveFromPool(cards, parity, extremum);
+      if (!solved) continue;
+      return {
+        cards: cards.slice(),
+        poolSize: size,
+        digitCount: answerDigits,
+        parity,
+        extremum,
+        answer: solved.answer,
+        targetNum: solved.targetNum
+      };
+    }
+    return {
+      cards: [6, 2, 5, 3, 8, 1, 9],
+      poolSize: 7,
+      digitCount: 5,
+      parity: PARITY.odd,
+      extremum: EXTREMUM.min,
+      answer: [2, 3, 6, 8, 5],
+      targetNum: 23685
+    };
+  }
+
+  function minPoolSize() {
+    return Math.max(MIN_POOL_FLOOR, answerDigits);
+  }
+
+  function clampPoolSize(n) {
+    const minPool = minPoolSize();
+    if (!Number.isFinite(n)) return minPool;
+    return Math.min(MAX_POOL, Math.max(minPool, Math.round(n)));
+  }
+
+  function clampAnswerDigits(n) {
+    if (!Number.isFinite(n)) return 5;
+    return Math.min(MAX_ANSWER_DIGITS, Math.max(MIN_ANSWER_DIGITS, Math.round(n)));
+  }
+
+  function requirementText(p) {
+    const parityZh = p.parity === PARITY.odd ? '奇數' : '偶數';
+    const extZh = p.extremum === EXTREMUM.min ? '最小' : '最大';
+    const d = p.digitCount || answerDigits;
+    return `排出${extZh}的${digitCountZh(d)}位${parityZh}`;
+  }
+
+  const slotsEl = document.getElementById('slots');
+  const slotLabelsEl = document.getElementById('slot-labels');
+  const answerPanelTitleEl = document.getElementById('answer-panel-title');
+  const answerSlotHintEl = document.getElementById('answer-slot-hint');
+  const answerNoteEl = document.getElementById('answer-note');
+  const settingsHintEl = document.getElementById('settings-hint');
+  const poolEl = document.getElementById('pool');
+  const requirementEl = document.getElementById('requirement');
+  const cardCountEl = document.getElementById('card-count');
+  const answerDigitsEl = document.getElementById('answer-digits');
+  const allowShowAnswerEl = document.getElementById('allow-show-answer');
+  const btnShowAnswerEl = document.getElementById('btn-show-answer');
+  const answerRevealEl = document.getElementById('answer-reveal');
+  const answerTextEl = document.getElementById('answer-text');
+  const toastEl = document.getElementById('toast');
+  let toastTimer = null;
+  let answerRevealed = false;
+  let roundId = 0;
+  let lastSubmittedRoundId = null;
+
+  function rocketBottomPercent(step) {
+    const t = step / MOON_STEPS;
+    return 10 + t * 72;
+  }
+
+  function updateMissionUI() {
+    const bottom = rocketBottomPercent(rocketStep);
+    missionRocketEl.style.bottom = bottom + '%';
+    missionScoreEl.textContent = '進度：' + rocketStep + ' / ' + MOON_STEPS;
+    missionRocketEl.setAttribute('aria-label', '火箭位置：第 ' + rocketStep + ' 步');
+  }
+
+  function updateModeBadge() {
+    const inMission = gameStarted;
+    document.body.classList.toggle('mission-mode', inMission);
+    modeBadgeEl.textContent = inMission ? '任務模式' : '練習模式';
+    modeBadgeEl.classList.toggle('mission', inMission);
+    modeBadgeEl.classList.toggle('practice', !inMission);
+    headerHintEl.textContent = inMission
+      ? '任務進行中：每題提交後會自動換題'
+      : '先設定數卡與答案位數，按「開始任務」後作答';
+  }
+
+  function syncGameLockUI() {
+    cardCountEl.disabled = gameStarted;
+    answerDigitsEl.disabled = gameStarted;
+    allowShowAnswerEl.disabled = gameStarted;
+    btnNewEl.disabled = gameStarted;
+    btnStartMissionEl.disabled = gameStarted;
+    settingsPanelEl.classList.toggle('game-locked', gameStarted);
+    if (gameStarted) {
+      hideAnswer();
+      allowShowAnswerEl.checked = false;
+    }
+    syncShowAnswerControl();
+    updateModeBadge();
+  }
+
+  function startGame() {
+    if (gameStarted) return;
+    readSettingsFromInputs();
+    lastSubmittedRoundId = null;
+    gameStarted = true;
+    syncGameLockUI();
+    loadNextQuestion();
+    showToast('任務開始！加油！', 'success');
+  }
+
+  function loadNextQuestion() {
+    renderPuzzle();
+    lastSubmittedRoundId = null;
+  }
+
+  function endGame() {
+    gameStarted = false;
+    syncGameLockUI();
+  }
+
+  function resetMissionProgress() {
+    rocketStep = 0;
+    updateMissionUI();
+    stopFireworks();
+    celebrationEl.classList.remove('active');
+    celebrationEl.setAttribute('aria-hidden', 'true');
+    endGame();
+  }
+
+  function onMissionAnswer(correct) {
+    const before = rocketStep;
+    if (correct) {
+      if (rocketStep < MOON_STEPS) rocketStep += 1;
+    } else if (rocketStep > 0) {
+      rocketStep -= 1;
+    }
+    updateMissionUI();
+    if (before < MOON_STEPS && rocketStep >= MOON_STEPS) {
+      showMoonCelebration();
+    }
+  }
+
+  function resizeFireworksCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    fireworksCanvas.width = Math.floor(window.innerWidth * dpr);
+    fireworksCanvas.height = Math.floor(window.innerHeight * dpr);
+    fireworksCanvas.style.width = window.innerWidth + 'px';
+    fireworksCanvas.style.height = window.innerHeight + 'px';
+  }
+
+  function randomFireworkColor() {
+    const colors = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93', '#ff924c'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  function spawnFireworkBurst(x, y) {
+    const color = randomFireworkColor();
+    const count = 36 + Math.floor(Math.random() * 20);
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.2;
+      const speed = 1.5 + Math.random() * 3.5;
+      fireworksParticles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 50 + Math.random() * 30,
+        color,
+        size: 2 + Math.random() * 2
+      });
+    }
+  }
+
+  function tickFireworks() {
+    const ctx = fireworksCanvas.getContext('2d');
+    const w = fireworksCanvas.width;
+    const h = fireworksCanvas.height;
+    const dpr = w / window.innerWidth;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.scale(dpr, dpr);
+    ctx.globalCompositeOperation = 'lighter';
+    if (Math.random() < 0.08) {
+      spawnFireworkBurst(
+        Math.random() * window.innerWidth,
+        Math.random() * window.innerHeight * 0.55
+      );
+    }
+    fireworksParticles = fireworksParticles.filter(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.04;
+      p.life -= 1;
+      if (p.life <= 0) return false;
+      ctx.beginPath();
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.min(1, p.life / 25);
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      return true;
+    });
+    ctx.restore();
+    fireworksRaf = requestAnimationFrame(tickFireworks);
+  }
+
+  function startFireworks() {
+    resizeFireworksCanvas();
+    fireworksParticles = [];
+    if (fireworksRaf) cancelAnimationFrame(fireworksRaf);
+    tickFireworks();
+  }
+
+  function stopFireworks() {
+    if (fireworksRaf) {
+      cancelAnimationFrame(fireworksRaf);
+      fireworksRaf = null;
+    }
+    fireworksParticles = [];
+    const ctx = fireworksCanvas.getContext('2d');
+    ctx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+  }
+
+  function showMoonCelebration() {
+    celebrationEl.classList.add('active');
+    celebrationEl.setAttribute('aria-hidden', 'false');
+    startFireworks();
+  }
+
+  function showToast(msg, type) {
+    toastEl.textContent = msg;
+    toastEl.className = type;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    const ms = type === 'error' ? 2800 : 2200;
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms);
+  }
+
+  function createCardEl(digit, cardId) {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.textContent = String(digit);
+    el.draggable = true;
+    el.dataset.digit = String(digit);
+    el.dataset.cardId = String(cardId);
+    el.addEventListener('dragstart', onDragStart);
+    el.addEventListener('dragend', onDragEnd);
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    return el;
+  }
+
+  function renderSlotLabels() {
+    const labels = placeLabelsFor(answerDigits);
+    slotLabelsEl.innerHTML = '';
+    const dense = answerDigits > 5;
+    slotLabelsEl.classList.toggle('dense', dense);
+    slotsEl.classList.toggle('dense', dense);
+    labels.forEach(text => {
+      const span = document.createElement('span');
+      span.textContent = text;
+      slotLabelsEl.appendChild(span);
+    });
+  }
+
+  function updateModeCopy() {
+    const dZh = digitCountZh(answerDigits);
+    answerPanelTitleEl.textContent = '你的答案（' + dZh + '位數）';
+    answerSlotHintEl.textContent =
+      '選 ' + answerDigits + ' 張數卡拖進各位；其餘留在數卡區';
+    settingsHintEl.textContent =
+      '數卡至少 ' + answerDigits + ' 張，選 ' + answerDigits + ' 張作答';
+    const labelNote = placeLabelsFor(answerDigits).join('→');
+    answerNoteEl.textContent = '排列見上（' + labelNote + '）';
+    cardCountEl.min = String(minPoolSize());
+    if (parseInt(cardCountEl.value, 10) < minPoolSize()) {
+      cardCountEl.value = String(minPoolSize());
+    }
+  }
+
+  function renderSlots() {
+    slotsEl.innerHTML = '';
+    for (let i = 0; i < answerDigits; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.dataset.index = String(i);
+      slot.dataset.drop = 'slot';
+      slot.addEventListener('dragover', onDragOver);
+      slot.addEventListener('dragleave', onDragLeave);
+      slot.addEventListener('drop', onDrop);
+      slotsEl.appendChild(slot);
+    }
+  }
+
+  function readSettingsFromInputs() {
+    answerDigits = clampAnswerDigits(parseInt(answerDigitsEl.value, 10));
+    answerDigitsEl.value = String(answerDigits);
+    poolSize = clampPoolSize(parseInt(cardCountEl.value, 10));
+    cardCountEl.value = String(poolSize);
+    updateModeCopy();
+    return { answerDigits, poolSize };
+  }
+
+  function readPoolSizeFromInput() {
+    readSettingsFromInputs();
+    return poolSize;
+  }
+
+  function syncShowAnswerControl() {
+    const allowed = allowShowAnswerEl.checked;
+    btnShowAnswerEl.disabled = !allowed;
+    if (!allowed) hideAnswer();
+  }
+
+  function formatAnswerDigits(answer) {
+    return answer.map(String).join(' ');
+  }
+
+  function hideAnswer() {
+    answerRevealed = false;
+    answerRevealEl.classList.remove('visible');
+    answerRevealEl.setAttribute('aria-hidden', 'true');
+    answerTextEl.textContent = '';
+    btnShowAnswerEl.textContent = '顯示答案';
+    btnShowAnswerEl.classList.remove('revealed');
+  }
+
+  function showAnswer() {
+    if (!puzzle || !allowShowAnswerEl.checked) return;
+    answerRevealed = true;
+    answerTextEl.textContent = formatAnswerDigits(puzzle.answer);
+    answerRevealEl.classList.add('visible');
+    answerRevealEl.setAttribute('aria-hidden', 'false');
+    btnShowAnswerEl.textContent = '隱藏答案';
+    btnShowAnswerEl.classList.add('revealed');
+  }
+
+  function renderPuzzle() {
+    if (!gameStarted) {
+      readSettingsFromInputs();
+    }
+    roundId += 1;
+    puzzle = generatePuzzle(poolSize);
+    puzzle.roundId = roundId;
+    requirementEl.textContent = requirementText(puzzle);
+    hideAnswer();
+    syncShowAnswerControl();
+    renderSlotLabels();
+    renderSlots();
+    poolEl.innerHTML = '';
+    puzzle.cards.forEach((d, i) => {
+      poolEl.appendChild(createCardEl(d, i));
+    });
+  }
+
+  let dragPayload = null;
+
+  function onDragStart(e) {
+    const el = e.target.closest('.card');
+    if (!el) return;
+    dragPayload = {
+      digit: el.dataset.digit,
+      el: el,
+      fromSlot: el.parentElement.dataset.drop === 'slot' ? el.parentElement.dataset.index : null,
+      fromPool: el.parentElement.id === 'pool'
+    };
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', el.dataset.digit);
+    requestAnimationFrame(() => el.classList.add('placeholder'));
+  }
+
+  function onDragEnd(e) {
+    const el = e.target.closest('.card');
+    if (el) el.classList.remove('placeholder');
+    document.querySelectorAll('.slot.drag-over').forEach(s => s.classList.remove('drag-over'));
+    dragPayload = null;
+  }
+
+  function onDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const t = e.currentTarget;
+    if (t.dataset.drop === 'slot' || t.dataset.drop === 'pool') t.classList.add('drag-over');
+  }
+
+  function onDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+
+  function placeCardInSlot(slot, cardEl) {
+    const existing = slot.querySelector('.card');
+    if (existing && existing !== cardEl) {
+      poolEl.appendChild(existing);
+    }
+    slot.appendChild(cardEl);
+    cardEl.classList.remove('placeholder');
+  }
+
+  function onDrop(e) {
+    e.preventDefault();
+    const target = e.currentTarget;
+    target.classList.remove('drag-over');
+    if (!dragPayload) return;
+    const cardEl = dragPayload.el;
+    if (target.dataset.drop === 'slot') {
+      placeCardInSlot(target, cardEl);
+    } else if (target.dataset.drop === 'pool') {
+      if (cardEl.parentElement !== poolEl) {
+        poolEl.appendChild(cardEl);
+        cardEl.classList.remove('placeholder');
+      }
+    }
+  }
+
+  poolEl.addEventListener('dragover', onDragOver);
+  poolEl.addEventListener('dragleave', onDragLeave);
+  poolEl.addEventListener('drop', onDrop);
+
+  function onTouchStart(e) {
+    const el = e.target.closest('.card');
+    if (!el) return;
+    e.preventDefault();
+    touchDrag = {
+      el,
+      digit: el.dataset.digit,
+      startX: e.touches[0].clientX,
+      startY: e.touches[0].clientY,
+      fromSlot: el.parentElement.dataset.drop === 'slot' ? el.parentElement.dataset.index : null
+    };
+    el.classList.add('placeholder');
+
+    function move(ev) {
+      const t = ev.touches[0];
+      const hit = document.elementFromPoint(t.clientX, t.clientY);
+      document.querySelectorAll('.slot.drag-over').forEach(s => s.classList.remove('drag-over'));
+      const slot = hit && hit.closest('.slot');
+      const pool = hit && hit.closest('#pool');
+      if (slot) slot.classList.add('drag-over');
+      if (pool) pool.classList.add('drag-over');
+    }
+
+    function end(ev) {
+      const t = ev.changedTouches[0];
+      const hit = document.elementFromPoint(t.clientX, t.clientY);
+      const slot = hit && hit.closest('.slot');
+      const pool = hit && hit.closest('#pool');
+      document.querySelectorAll('.slot.drag-over').forEach(s => s.classList.remove('drag-over'));
+      poolEl.classList.remove('drag-over');
+      if (slot && touchDrag) placeCardInSlot(slot, touchDrag.el);
+      else if (pool && touchDrag) {
+        pool.appendChild(touchDrag.el);
+        touchDrag.el.classList.remove('placeholder');
+      } else if (touchDrag) {
+        touchDrag.el.classList.remove('placeholder');
+      }
+      touchDrag = null;
+      document.removeEventListener('touchmove', move);
+      document.removeEventListener('touchend', end);
+    }
+
+    document.addEventListener('touchmove', move, { passive: true });
+    document.addEventListener('touchend', end);
+  }
+
+  function getUserAnswer() {
+    const slots = slotsEl.querySelectorAll('.slot');
+    const digits = [];
+    for (const slot of slots) {
+      const card = slot.querySelector('.card');
+      if (!card) return { complete: false, digits: null };
+      digits.push(parseInt(card.dataset.digit, 10));
+    }
+    return { complete: true, digits };
+  }
+
+  function countCardsInSlots() {
+    let n = 0;
+    slotsEl.querySelectorAll('.slot .card').forEach(() => { n += 1; });
+    return n;
+  }
+
+  function multisetSubsetOf(user, pool) {
+    const counts = new Map();
+    pool.forEach(d => counts.set(d, (counts.get(d) || 0) + 1));
+    for (const d of user) {
+      const c = counts.get(d) || 0;
+      if (c === 0) return false;
+      counts.set(d, c - 1);
+    }
+    return true;
+  }
+
+  function validateSubmission(userDigits) {
+    const digitsLen = puzzle.digitCount || answerDigits;
+    if (countCardsInSlots() !== digitsLen) {
+      return { ok: false, reason: 'incomplete' };
+    }
+    if (userDigits[0] === 0) {
+      return { ok: false, reason: 'leading' };
+    }
+    if (!multisetSubsetOf(userDigits, puzzle.cards)) {
+      return { ok: false, reason: 'digits' };
+    }
+    const ones = userDigits[userDigits.length - 1];
+    const parityOk = puzzle.parity === PARITY.odd ? isOdd(ones) : isEven(ones);
+    if (!parityOk) {
+      return { ok: false, reason: 'parity' };
+    }
+    const userNum = parseInt(userDigits.join(''), 10);
+    const { minN, maxN } = extremumBoundsFromPool(puzzle.cards, puzzle.parity);
+    if (userNum !== puzzle.targetNum) {
+      if (puzzle.extremum === EXTREMUM.min && minN !== null && userNum > minN) {
+        return { ok: false, reason: 'notMin' };
+      }
+      if (puzzle.extremum === EXTREMUM.max && maxN !== null && userNum < maxN) {
+        return { ok: false, reason: 'notMax' };
+      }
+      return { ok: false, reason: 'extremum' };
+    }
+    return { ok: true };
+  }
+
+  const feedback = {
+    leading: '最高位不能是 0！',
+    digits: () => '請從數卡區選 ' + (puzzle && puzzle.digitCount ? puzzle.digitCount : answerDigits) + ' 張卡，每張各用一次。',
+    parity: puzzle => (puzzle.parity === PARITY.odd ? '個位應為奇數。' : '個位應為偶數。'),
+    notMin: () => '還不是最小的合條件' + digitCountZh(puzzle && puzzle.digitCount ? puzzle.digitCount : answerDigits) + '位數，再試試。',
+    notMax: () => '還不是最大的合條件' + digitCountZh(puzzle && puzzle.digitCount ? puzzle.digitCount : answerDigits) + '位數，再試試。',
+    extremum: '未符合題目的最大或最小要求。',
+    incomplete: () => '請把 ' + (puzzle && puzzle.digitCount ? puzzle.digitCount : answerDigits) + ' 個位都放好數卡再提交。'
+  };
+
+  document.getElementById('btn-submit').addEventListener('click', () => {
+    if (!gameStarted) {
+      showToast('請先按「開始任務」', 'error');
+      return;
+    }
+    const { complete, digits } = getUserAnswer();
+    if (!complete) {
+      showToast(feedback.incomplete(), 'error');
+      return;
+    }
+    if (lastSubmittedRoundId === puzzle.roundId) {
+      showToast('這題已提交，請作答新題目', 'error');
+      return;
+    }
+    const result = validateSubmission(digits);
+    lastSubmittedRoundId = puzzle.roundId;
+    if (result.ok) {
+      onMissionAnswer(true);
+      showToast('答對了！做得好！', 'success');
+    } else {
+      onMissionAnswer(false);
+      let msg = feedback[result.reason];
+      if (typeof msg === 'function') msg = msg(puzzle);
+      showToast(msg, 'error');
+    }
+    loadNextQuestion();
+  });
+
+  document.getElementById('btn-new').addEventListener('click', () => {
+    if (gameStarted) return;
+    renderPuzzle();
+    showToast('已換新題目', 'info');
+  });
+
+  cardCountEl.addEventListener('change', () => {
+    if (gameStarted) return;
+    renderPuzzle();
+    showToast('已更新數卡數量', 'info');
+  });
+
+  answerDigitsEl.addEventListener('change', () => {
+    if (gameStarted) return;
+    renderPuzzle();
+    showToast('已更新答案位數', 'info');
+  });
+
+  allowShowAnswerEl.addEventListener('change', () => {
+    syncShowAnswerControl();
+    if (!allowShowAnswerEl.checked) {
+      showToast('已關閉顯示答案', 'info');
+    }
+  });
+
+  btnShowAnswerEl.addEventListener('click', () => {
+    if (btnShowAnswerEl.disabled) return;
+    if (answerRevealed) {
+      hideAnswer();
+      return;
+    }
+    showAnswer();
+  });
+
+  btnStartMissionEl.addEventListener('click', () => {
+    startGame();
+  });
+
+  document.getElementById('btn-exit-mission').addEventListener('click', () => {
+    resetMissionProgress();
+    showToast('已退出任務，回到練習模式', 'info');
+  });
+
+  document.getElementById('btn-close-celebration').addEventListener('click', () => {
+    stopFireworks();
+    celebrationEl.classList.remove('active');
+    celebrationEl.setAttribute('aria-hidden', 'true');
+  });
+
+  window.addEventListener('resize', () => {
+    if (celebrationEl.classList.contains('active')) resizeFireworksCanvas();
+  });
+
+  updateModeCopy();
+  renderSlotLabels();
+  renderSlots();
+  updateMissionUI();
+  syncGameLockUI();
+  updateModeBadge();
+  renderPuzzle();
+})();
+  </script>
+</body>
+</html>
