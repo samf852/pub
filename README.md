@@ -4,7 +4,7 @@ Static HTML hub for [samf852](https://github.com/samf852). The home page is a ge
 
 Predicted site: <https://samf852.github.io/pub/>
 
-Sample page: <https://samf852.github.io/pub/pages/hello/>
+Sample page: <https://samf852.github.io/pub/pages/digit-cards/>
 
 ## Add a page
 
@@ -12,7 +12,7 @@ Put the file under `pages/`. Two shapes are picked up:
 
 | File | URL on the site |
 | --- | --- |
-| `pages/hello/index.html` | `/pages/hello/` |
+| `pages/digit-cards/index.html` | `/pages/digit-cards/` |
 | `pages/notes.html` | `/pages/notes.html` |
 
 The full Pages URL is that path after `https://samf852.github.io/pub`.
