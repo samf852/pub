@@ -641,20 +641,58 @@
     text-align: center;
     margin-top: 0.5rem;
   }
+  .lang-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-bottom: 0.45rem;
+    font-size: 0.82rem;
+  }
+  .lang-switch button {
+    background: none;
+    border: none;
+    font: inherit;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.15rem 0.4rem;
+    border-radius: 6px;
+    line-height: 1.2;
+  }
+  .lang-switch button:hover {
+    color: var(--accent-dark);
+  }
+  .lang-switch button.active {
+    color: var(--accent-dark);
+    font-weight: 700;
+    background: rgba(33, 158, 188, 0.12);
+  }
+  .lang-switch .sep {
+    color: var(--muted);
+    user-select: none;
+  }
+  body.mission-mode .lang-switch button.active {
+    background: rgba(61, 181, 216, 0.2);
+  }
   </style>
 </head>
 <body>
   <div class="app-shell">
     <main class="main-wrap">
     <header>
-      <h1>數學練習：排出位數</h1>
+      <nav class="lang-switch" aria-label="Language">
+        <button type="button" id="lang-en" data-lang="en">ENG</button>
+        <span class="sep" aria-hidden="true">|</span>
+        <button type="button" id="lang-zh" data-lang="zh-Hant">繁</button>
+      </nav>
+      <h1 id="page-title" data-i18n="pageTitle">數學練習：排出位數</h1>
       <span class="mode-badge practice" id="mode-badge" role="status">練習模式</span>
       <p id="header-hint">先設定數卡與答案位數，按「開始任務」後作答</p>
     </header>
 
     <aside class="mission-sidebar panel" aria-labelledby="mission-label">
-      <div class="panel-title" id="mission-label">太空任務</div>
-      <p class="hint">答對向右，答錯向左，10 步到月球</p>
+      <div class="panel-title" id="mission-label" data-i18n="missionTitle">太空任務</div>
+      <p class="hint" id="mission-hint" data-i18n="missionHint">答對向右，答錯向左，10 步到月球</p>
       <div class="mission-track-wrap">
         <p class="mission-score" id="mission-score" aria-live="polite">進度：0 / 10</p>
         <div class="mission-track" id="mission-track">
@@ -677,29 +715,29 @@
     <div class="play-columns">
       <div class="play-stack" id="play-stack">
         <section class="panel" id="settings-panel" aria-labelledby="settings-label">
-          <div class="panel-title" id="settings-label">設定</div>
+          <div class="panel-title" id="settings-label" data-i18n="settingsTitle">設定</div>
           <div class="settings-row">
             <label for="answer-digits">
-              答案位數
+              <span data-i18n="labelAnswerDigits">答案位數</span>
               <input type="number" id="answer-digits" min="3" max="7" value="5" inputmode="numeric" aria-describedby="settings-hint" />
             </label>
             <label for="card-count">
-              數卡數量
+              <span data-i18n="labelCardCount">數卡數量</span>
               <input type="number" id="card-count" min="5" max="12" value="5" inputmode="numeric" aria-describedby="settings-hint" />
             </label>
             <label class="toggle-answer">
               <input type="checkbox" id="allow-show-answer" />
-              允許顯示答案
+              <span data-i18n="labelAllowAnswer">允許顯示答案</span>
             </label>
             <span class="hint" id="settings-hint" style="margin:0">數卡不少於答案位數，選其中與答案位數相同張數作答</span>
           </div>
         </section>
 
         <section class="panel" aria-labelledby="req-label">
-          <div class="panel-title" id="req-label">題目</div>
+          <div class="panel-title" id="req-label" data-i18n="reqTitle">題目</div>
           <div class="requirement" id="requirement" role="status">載入中…</div>
           <div class="answer-reveal" id="answer-reveal" aria-hidden="true">
-            <div class="panel-title">參考答案</div>
+            <div class="panel-title" id="answer-reveal-title" data-i18n="answerRevealTitle">參考答案</div>
             <p class="answer-value" id="answer-text"></p>
             <p class="answer-note" id="answer-note">排列見上（最高位在左）</p>
           </div>
@@ -713,7 +751,7 @@
         </section>
 
         <section class="panel" id="pool-panel">
-          <div class="panel-title">數卡</div>
+          <div class="panel-title" id="pool-label" data-i18n="poolTitle">數卡</div>
           <div class="pool" id="pool" data-drop="pool"></div>
         </section>
       </div>
@@ -731,9 +769,9 @@
   <div id="celebration" class="celebration" aria-hidden="true" role="dialog" aria-labelledby="celebration-title">
     <canvas id="fireworks-canvas" aria-hidden="true"></canvas>
     <div class="celebration-card">
-      <h2 id="celebration-title">恭喜！</h2>
-      <p>你成功帶火箭登陸月球！</p>
-      <button type="button" id="btn-close-celebration">太棒了！</button>
+      <h2 id="celebration-title" data-i18n="celebrationTitle">恭喜！</h2>
+      <p id="celebration-body" data-i18n="celebrationBody">你成功帶火箭登陸月球！</p>
+      <button type="button" id="btn-close-celebration" data-i18n="celebrationBtn">太棒了！</button>
     </div>
   </div>
 
@@ -749,6 +787,149 @@
   const MIN_POOL_FLOOR = 3;
   const MAX_POOL = 12;
   const MOON_STEPS = 10;
+  const LANG_STORAGE_KEY = 'digit-cards-lang';
+  const LANG_ZH = 'zh-Hant';
+  const LANG_EN = 'en';
+
+  const I18N = {
+    'zh-Hant': {
+      pageTitle: '數學練習：排出位數',
+      docTitle: '排出位數 — 數卡練習',
+      modePractice: '練習模式',
+      modeMission: '任務模式',
+      headerHintPractice: '先設定數卡與答案位數，按「開始任務」後作答',
+      headerHintMission: '任務進行中：每題提交後會自動換題',
+      missionTitle: '太空任務',
+      missionHint: '答對向右，答錯向左，10 步到月球',
+      btnStartMission: '開始任務',
+      btnExitMission: '退出任務',
+      settingsTitle: '設定',
+      labelAnswerDigits: '答案位數',
+      labelCardCount: '數卡數量',
+      labelAllowAnswer: '允許顯示答案',
+      reqTitle: '題目',
+      loading: '載入中…',
+      answerRevealTitle: '參考答案',
+      poolTitle: '數卡',
+      btnSubmit: '提交',
+      btnShowAnswer: '顯示答案',
+      btnHideAnswer: '隱藏答案',
+      btnNew: '新題目',
+      celebrationTitle: '恭喜！',
+      celebrationBody: '你成功帶火箭登陸月球！',
+      celebrationBtn: '太棒了！',
+      settingsHint: '數卡不少於答案位數，選其中與答案位數相同張數作答',
+      settingsHintShort: '數卡至少 {n} 張，選 {n} 張作答',
+      yourAnswer: '你的答案',
+      yourAnswerDigits: '你的答案（{d}位數）',
+      answerSlotHint: '把選中的數卡拖進各位',
+      answerSlotHintPick: '選 {n} 張數卡拖進各位；其餘留在數卡區',
+      answerNote: '排列見上（最高位在左）',
+      answerNoteOrder: '排列見上（{order}）',
+      progress: '進度：{step} / {total}',
+      rocketAria: '火箭位置：第 {step} 步',
+      toastStartMission: '任務開始！加油！',
+      toastExitMission: '已退出任務，回到練習模式',
+      toastNewRound: '已換新題目',
+      toastPoolUpdated: '已更新數卡數量',
+      toastDigitsUpdated: '已更新答案位數',
+      toastHideAnswerOff: '已關閉顯示答案',
+      toastNeedStart: '請先按「開始任務」',
+      toastAlreadySubmitted: '這題已提交，請作答新題目',
+      toastCorrect: '答對了！做得好！',
+      errLeading: '最高位不能是 0！',
+      errDigits: '請從數卡區選 {n} 張卡，每張各用一次。',
+      errParityOdd: '個位應為奇數。',
+      errParityEven: '個位應為偶數。',
+      errNotMin: '還不是最小的合條件{d}位數，再試試。',
+      errNotMax: '還不是最大的合條件{d}位數，再試試。',
+      errExtremum: '未符合題目的最大或最小要求。',
+      errIncomplete: '請把 {n} 個位都放好數卡再提交。',
+      reqTemplate: '排出{ext}的{d}位{parity}',
+      parityOdd: '奇數',
+      parityEven: '偶數',
+      extMin: '最小',
+      extMax: '最大'
+    },
+    en: {
+      pageTitle: 'Digit arrangement',
+      docTitle: 'Digit cards — place value',
+      modePractice: 'Practice',
+      modeMission: 'Mission',
+      headerHintPractice: 'Set pool size and answer length, then tap Start mission.',
+      headerHintMission: 'Mission in progress: a new question loads after each submit.',
+      missionTitle: 'Space mission',
+      missionHint: 'Correct → move right; wrong → move left. Reach the moon in 10 steps.',
+      btnStartMission: 'Start mission',
+      btnExitMission: 'Exit mission',
+      settingsTitle: 'Settings',
+      labelAnswerDigits: 'Answer digits',
+      labelCardCount: 'Cards in pool',
+      labelAllowAnswer: 'Allow reveal answer',
+      reqTitle: 'Task',
+      loading: 'Loading…',
+      answerRevealTitle: 'Reference answer',
+      poolTitle: 'Digit cards',
+      btnSubmit: 'Submit',
+      btnShowAnswer: 'Show answer',
+      btnHideAnswer: 'Hide answer',
+      btnNew: 'New task',
+      celebrationTitle: 'Congratulations!',
+      celebrationBody: 'You landed the rocket on the moon!',
+      celebrationBtn: 'Awesome!',
+      settingsHint: 'Use at least as many cards as answer digits; drag exactly that many into place.',
+      settingsHintShort: 'At least {n} cards; place {n} in the answer.',
+      yourAnswer: 'Your answer',
+      yourAnswerDigits: 'Your answer ({n} digits)',
+      answerSlotHint: 'Drag chosen cards into each place',
+      answerSlotHintPick: 'Drag {n} cards into the places; leave the rest in the pool.',
+      answerNote: 'Digits read left to right (highest place on the left).',
+      answerNoteOrder: 'Order: {order}',
+      progress: 'Progress: {step} / {total}',
+      rocketAria: 'Rocket at step {step}',
+      toastStartMission: 'Mission started — good luck!',
+      toastExitMission: 'Mission ended — back to practice.',
+      toastNewRound: 'New task loaded.',
+      toastPoolUpdated: 'Pool size updated.',
+      toastDigitsUpdated: 'Answer length updated.',
+      toastHideAnswerOff: 'Answer reveal turned off.',
+      toastNeedStart: 'Tap Start mission first.',
+      toastAlreadySubmitted: 'Already submitted — wait for the next task.',
+      toastCorrect: 'Correct — well done!',
+      errLeading: 'The leading digit can’t be 0.',
+      errDigits: 'Pick {n} cards from the pool, each used once.',
+      errParityOdd: 'The ones place must be odd.',
+      errParityEven: 'The ones place must be even.',
+      errNotMin: 'Not the smallest valid {n}-digit number yet — try again.',
+      errNotMax: 'Not the largest valid {n}-digit number yet — try again.',
+      errExtremum: 'Doesn’t meet the task’s min or max requirement.',
+      errIncomplete: 'Place a card in all {n} places before submitting.',
+      reqTemplate: 'Form the {ext} {n}-digit {parity} number',
+      parityOdd: 'odd',
+      parityEven: 'even',
+      extMin: 'smallest',
+      extMax: 'largest'
+    }
+  };
+
+  let lang = (() => {
+    try {
+      const saved = localStorage.getItem(LANG_STORAGE_KEY);
+      if (saved === LANG_EN || saved === LANG_ZH) return saved;
+    } catch (_) { /* ignore */ }
+    return LANG_ZH;
+  })();
+
+  function t(key, vars) {
+    const pack = I18N[lang] || I18N[LANG_ZH];
+    let s = pack[key] ?? I18N[LANG_ZH][key] ?? key;
+    if (vars) {
+      Object.keys(vars).forEach(k => {
+        s = s.replaceAll('{' + k + '}', String(vars[k]));
+      });
+    }
+    return s;
+  }
 
   let puzzle = null;
   let touchDrag = null;
@@ -796,21 +977,37 @@
     return results;
   }
 
-  function digitCountZh(n) {
+  function digitCountLabel(n) {
+    if (lang === LANG_EN) return String(n);
     const map = { 3: '三', 4: '四', 5: '五', 6: '六', 7: '七' };
     return map[n] || String(n);
   }
 
   function placeLabelsFor(n) {
-    const table = {
+    const zh = {
       3: ['百', '十', '個'],
       4: ['千', '百', '十', '個'],
       5: ['萬', '千', '百', '十', '個'],
       6: ['十萬', '萬', '千', '百', '十', '個'],
       7: ['百萬', '十萬', '萬', '千', '百', '十', '個']
     };
+    const en = {
+      3: ['Hundreds', 'Tens', 'Ones'],
+      4: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
+      5: ['Ten-thousands', 'Thousands', 'Hundreds', 'Tens', 'Ones'],
+      6: ['Hundred-thousands', 'Ten-thousands', 'Thousands', 'Hundreds', 'Tens', 'Ones'],
+      7: ['Millions', 'Hundred-thousands', 'Ten-thousands', 'Thousands', 'Hundreds', 'Tens', 'Ones']
+    };
+    const table = lang === LANG_EN ? en : zh;
     if (table[n]) return table[n].slice();
+    if (lang === LANG_EN) {
+      return Array.from({ length: n }, (_, i) => 'D' + (n - i));
+    }
     return Array.from({ length: n }, (_, i) => '第' + (i + 1));
+  }
+
+  function placeOrderSeparator() {
+    return lang === LANG_EN ? ' → ' : '→';
   }
 
   function allValidNumbers(cards, parity) {
@@ -936,10 +1133,21 @@
   }
 
   function requirementText(p) {
-    const parityZh = p.parity === PARITY.odd ? '奇數' : '偶數';
-    const extZh = p.extremum === EXTREMUM.min ? '最小' : '最大';
+    const parityKey = p.parity === PARITY.odd ? 'parityOdd' : 'parityEven';
+    const extKey = p.extremum === EXTREMUM.min ? 'extMin' : 'extMax';
     const d = p.digitCount || answerDigits;
-    return `排出${extZh}的${digitCountZh(d)}位${parityZh}`;
+    if (lang === LANG_EN) {
+      return t('reqTemplate', {
+        ext: t(extKey),
+        n: d,
+        parity: t(parityKey)
+      });
+    }
+    return t('reqTemplate', {
+      ext: t(extKey),
+      d: digitCountLabel(d),
+      parity: t(parityKey)
+    });
   }
 
   const slotsEl = document.getElementById('slots');
@@ -957,6 +1165,10 @@
   const answerRevealEl = document.getElementById('answer-reveal');
   const answerTextEl = document.getElementById('answer-text');
   const toastEl = document.getElementById('toast');
+  const langEnEl = document.getElementById('lang-en');
+  const langZhEl = document.getElementById('lang-zh');
+  const btnSubmitEl = document.getElementById('btn-submit');
+  const btnExitMissionEl = document.getElementById('btn-exit-mission');
   let toastTimer = null;
   let answerRevealed = false;
   let roundId = 0;
@@ -971,19 +1183,58 @@
     const left = rocketLeftPercent(rocketStep);
     missionRocketEl.style.left = left + '%';
     missionRocketEl.style.bottom = '';
-    missionScoreEl.textContent = '進度：' + rocketStep + ' / ' + MOON_STEPS;
-    missionRocketEl.setAttribute('aria-label', '火箭位置：第 ' + rocketStep + ' 步');
+    missionScoreEl.textContent = t('progress', { step: rocketStep, total: MOON_STEPS });
+    missionRocketEl.setAttribute('aria-label', t('rocketAria', { step: rocketStep }));
   }
 
   function updateModeBadge() {
     const inMission = gameStarted;
     document.body.classList.toggle('mission-mode', inMission);
-    modeBadgeEl.textContent = inMission ? '任務模式' : '練習模式';
+    modeBadgeEl.textContent = inMission ? t('modeMission') : t('modePractice');
     modeBadgeEl.classList.toggle('mission', inMission);
     modeBadgeEl.classList.toggle('practice', !inMission);
-    headerHintEl.textContent = inMission
-      ? '任務進行中：每題提交後會自動換題'
-      : '先設定數卡與答案位數，按「開始任務」後作答';
+    headerHintEl.textContent = inMission ? t('headerHintMission') : t('headerHintPractice');
+  }
+
+  function applyStaticLocale() {
+    document.documentElement.lang = lang === LANG_EN ? 'en' : 'zh-Hant';
+    document.title = t('docTitle');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = t(el.dataset.i18n);
+    });
+    btnSubmitEl.textContent = t('btnSubmit');
+    btnNewEl.textContent = t('btnNew');
+    btnStartMissionEl.textContent = t('btnStartMission');
+    btnExitMissionEl.textContent = t('btnExitMission');
+    if (langEnEl && langZhEl) {
+      langEnEl.classList.toggle('active', lang === LANG_EN);
+      langEnEl.setAttribute('aria-pressed', lang === LANG_EN ? 'true' : 'false');
+      langZhEl.classList.toggle('active', lang === LANG_ZH);
+      langZhEl.setAttribute('aria-pressed', lang === LANG_ZH ? 'true' : 'false');
+    }
+    updateModeBadge();
+    updateModeCopy();
+    updateMissionUI();
+    if (!puzzle) {
+      requirementEl.textContent = t('loading');
+    } else {
+      requirementEl.textContent = requirementText(puzzle);
+    }
+    if (answerRevealed) {
+      btnShowAnswerEl.textContent = t('btnHideAnswer');
+    } else {
+      btnShowAnswerEl.textContent = t('btnShowAnswer');
+    }
+  }
+
+  function setLanguage(next) {
+    if (next !== LANG_EN && next !== LANG_ZH) return;
+    lang = next;
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, lang);
+    } catch (_) { /* ignore */ }
+    applyStaticLocale();
+    renderSlotLabels();
   }
 
   function syncGameLockUI() {
@@ -998,6 +1249,7 @@
     }
     syncShowAnswerControl();
     updateModeBadge();
+    updateModeCopy();
   }
 
   function startGame() {
@@ -1007,7 +1259,7 @@
     gameStarted = true;
     syncGameLockUI();
     loadNextQuestion();
-    showToast('任務開始！加油！', 'success');
+    showToast(t('toastStartMission'), 'success');
   }
 
   function loadNextQuestion() {
@@ -1165,14 +1417,17 @@
   }
 
   function updateModeCopy() {
-    const dZh = digitCountZh(answerDigits);
-    answerPanelTitleEl.textContent = '你的答案（' + dZh + '位數）';
-    answerSlotHintEl.textContent =
-      '選 ' + answerDigits + ' 張數卡拖進各位；其餘留在數卡區';
-    settingsHintEl.textContent =
-      '數卡至少 ' + answerDigits + ' 張，選 ' + answerDigits + ' 張作答';
-    const labelNote = placeLabelsFor(answerDigits).join('→');
-    answerNoteEl.textContent = '排列見上（' + labelNote + '）';
+    if (lang === LANG_EN) {
+      answerPanelTitleEl.textContent = t('yourAnswerDigits', { n: answerDigits });
+    } else {
+      answerPanelTitleEl.textContent = t('yourAnswerDigits', { d: digitCountLabel(answerDigits) });
+    }
+    answerSlotHintEl.textContent = t('answerSlotHintPick', { n: answerDigits });
+    settingsHintEl.textContent = gameStarted
+      ? t('settingsHintShort', { n: answerDigits })
+      : t('settingsHint');
+    const labelNote = placeLabelsFor(answerDigits).join(placeOrderSeparator());
+    answerNoteEl.textContent = t('answerNoteOrder', { order: labelNote });
     cardCountEl.min = String(minPoolSize());
     if (parseInt(cardCountEl.value, 10) < minPoolSize()) {
       cardCountEl.value = String(minPoolSize());
@@ -1222,7 +1477,7 @@
     answerRevealEl.classList.remove('visible');
     answerRevealEl.setAttribute('aria-hidden', 'true');
     answerTextEl.textContent = '';
-    btnShowAnswerEl.textContent = '顯示答案';
+    btnShowAnswerEl.textContent = t('btnShowAnswer');
     btnShowAnswerEl.classList.remove('revealed');
   }
 
@@ -1232,7 +1487,7 @@
     answerTextEl.textContent = formatAnswerDigits(puzzle.answer);
     answerRevealEl.classList.add('visible');
     answerRevealEl.setAttribute('aria-hidden', 'false');
-    btnShowAnswerEl.textContent = '隱藏答案';
+    btnShowAnswerEl.textContent = t('btnHideAnswer');
     btnShowAnswerEl.classList.add('revealed');
   }
 
@@ -1421,40 +1676,54 @@
     return { ok: true };
   }
 
-  const feedback = {
-    leading: '最高位不能是 0！',
-    digits: () => '請從數卡區選 ' + (puzzle && puzzle.digitCount ? puzzle.digitCount : answerDigits) + ' 張卡，每張各用一次。',
-    parity: puzzle => (puzzle.parity === PARITY.odd ? '個位應為奇數。' : '個位應為偶數。'),
-    notMin: () => '還不是最小的合條件' + digitCountZh(puzzle && puzzle.digitCount ? puzzle.digitCount : answerDigits) + '位數，再試試。',
-    notMax: () => '還不是最大的合條件' + digitCountZh(puzzle && puzzle.digitCount ? puzzle.digitCount : answerDigits) + '位數，再試試。',
-    extremum: '未符合題目的最大或最小要求。',
-    incomplete: () => '請把 ' + (puzzle && puzzle.digitCount ? puzzle.digitCount : answerDigits) + ' 個位都放好數卡再提交。'
-  };
+  function feedbackFor(reason) {
+    const n = puzzle && puzzle.digitCount ? puzzle.digitCount : answerDigits;
+    switch (reason) {
+      case 'leading':
+        return t('errLeading');
+      case 'digits':
+        return t('errDigits', { n });
+      case 'parity':
+        return puzzle && puzzle.parity === PARITY.odd ? t('errParityOdd') : t('errParityEven');
+      case 'notMin':
+        return lang === LANG_EN
+          ? t('errNotMin', { n })
+          : t('errNotMin', { d: digitCountLabel(n) });
+      case 'notMax':
+        return lang === LANG_EN
+          ? t('errNotMax', { n })
+          : t('errNotMax', { d: digitCountLabel(n) });
+      case 'extremum':
+        return t('errExtremum');
+      case 'incomplete':
+        return t('errIncomplete', { n });
+      default:
+        return t('errExtremum');
+    }
+  }
 
   document.getElementById('btn-submit').addEventListener('click', () => {
     if (!gameStarted) {
-      showToast('請先按「開始任務」', 'error');
+      showToast(t('toastNeedStart'), 'error');
       return;
     }
     const { complete, digits } = getUserAnswer();
     if (!complete) {
-      showToast(feedback.incomplete(), 'error');
+      showToast(feedbackFor('incomplete'), 'error');
       return;
     }
     if (lastSubmittedRoundId === puzzle.roundId) {
-      showToast('這題已提交，請作答新題目', 'error');
+      showToast(t('toastAlreadySubmitted'), 'error');
       return;
     }
     const result = validateSubmission(digits);
     lastSubmittedRoundId = puzzle.roundId;
     if (result.ok) {
       onMissionAnswer(true);
-      showToast('答對了！做得好！', 'success');
+      showToast(t('toastCorrect'), 'success');
     } else {
       onMissionAnswer(false);
-      let msg = feedback[result.reason];
-      if (typeof msg === 'function') msg = msg(puzzle);
-      showToast(msg, 'error');
+      showToast(feedbackFor(result.reason), 'error');
     }
     loadNextQuestion();
   });
@@ -1462,25 +1731,25 @@
   document.getElementById('btn-new').addEventListener('click', () => {
     if (gameStarted) return;
     renderPuzzle();
-    showToast('已換新題目', 'info');
+    showToast(t('toastNewRound'), 'info');
   });
 
   cardCountEl.addEventListener('change', () => {
     if (gameStarted) return;
     renderPuzzle();
-    showToast('已更新數卡數量', 'info');
+    showToast(t('toastPoolUpdated'), 'info');
   });
 
   answerDigitsEl.addEventListener('change', () => {
     if (gameStarted) return;
     renderPuzzle();
-    showToast('已更新答案位數', 'info');
+    showToast(t('toastDigitsUpdated'), 'info');
   });
 
   allowShowAnswerEl.addEventListener('change', () => {
     syncShowAnswerControl();
     if (!allowShowAnswerEl.checked) {
-      showToast('已關閉顯示答案', 'info');
+      showToast(t('toastHideAnswerOff'), 'info');
     }
   });
 
@@ -1499,7 +1768,7 @@
 
   document.getElementById('btn-exit-mission').addEventListener('click', () => {
     resetMissionProgress();
-    showToast('已退出任務，回到練習模式', 'info');
+    showToast(t('toastExitMission'), 'info');
   });
 
   document.getElementById('btn-close-celebration').addEventListener('click', () => {
@@ -1512,12 +1781,13 @@
     if (celebrationEl.classList.contains('active')) resizeFireworksCanvas();
   });
 
-  updateModeCopy();
+  if (langEnEl) langEnEl.addEventListener('click', () => setLanguage(LANG_EN));
+  if (langZhEl) langZhEl.addEventListener('click', () => setLanguage(LANG_ZH));
+
+  applyStaticLocale();
   renderSlotLabels();
   renderSlots();
-  updateMissionUI();
   syncGameLockUI();
-  updateModeBadge();
   renderPuzzle();
 })();
   </script>
