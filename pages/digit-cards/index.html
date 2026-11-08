@@ -104,26 +104,8 @@
     margin-bottom: 0;
     text-align: center;
   }
-  body:not(.mission-mode) .mission-sidebar .panel-title,
-  body:not(.mission-mode) .mission-sidebar > .hint,
-  body:not(.mission-mode) .mission-track-wrap .mission-score,
-  body:not(.mission-mode) .mission-track-wrap .mission-track,
-  body:not(.mission-mode) .mission-reset,
-  body:not(.mission-mode) #btn-exit-mission {
-    display: none;
-  }
   body:not(.mission-mode) .mission-sidebar {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-  }
-  body:not(.mission-mode) .mission-track-wrap {
-    gap: 0;
-  }
-  body:not(.mission-mode) .mission-actions {
-    max-width: 16rem;
-    margin: 0 auto;
+    display: none;
   }
   header {
     text-align: center;
@@ -136,26 +118,51 @@
     color: var(--accent-dark);
   }
   header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
-  .mode-badge {
-    display: inline-block;
-    margin-top: 0.5rem;
-    padding: 0.3rem 0.85rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
+  .mode-switch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+    margin-bottom: 0.15rem;
+    flex-wrap: wrap;
+  }
+  .mode-switch .sep {
+    color: var(--muted);
+    user-select: none;
+    font-size: 0.85rem;
+  }
+  .mode-pick {
+    font: inherit;
+    font-size: 0.82rem;
     font-weight: 700;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
+    padding: 0.32rem 0.9rem;
+    border-radius: 999px;
     border: 2px solid var(--border);
-    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    background: rgba(255, 255, 255, 0.55);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
   }
-  .mode-badge.practice {
-    background: rgba(33, 158, 188, 0.14);
-    color: var(--accent-dark);
-  }
-  .mode-badge.mission {
-    background: rgba(61, 181, 216, 0.18);
+  .mode-pick:hover {
     color: var(--accent-dark);
     border-color: var(--accent);
+  }
+  .mode-pick.active {
+    color: var(--accent-dark);
+    border-color: var(--accent);
+    background: rgba(33, 158, 188, 0.14);
+    box-shadow: 0 0 10px rgba(33, 158, 188, 0.15);
+  }
+  body.mission-mode .mode-pick.active#mode-mission {
+    background: rgba(61, 181, 216, 0.18);
     box-shadow: 0 0 14px rgba(61, 181, 216, 0.25);
+  }
+  body.mission-mode .mode-pick:not(.active) {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+    border-color: var(--border);
   }
   body.mission-mode .panel {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
@@ -180,15 +187,6 @@
     background: #243447;
     color: var(--muted);
     border-color: var(--border);
-  }
-  body.mission-mode .mission-reset {
-    background: #243447;
-    color: #ffd6a5;
-    border-color: #c47a32;
-  }
-  body.mission-mode .mission-reset:hover {
-    border-color: #ffb347;
-    color: #fff;
   }
   .settings-row {
     display: flex;
@@ -362,56 +360,6 @@
     color: rgba(255, 255, 255, 0.55);
     font-weight: 600;
     pointer-events: none;
-  }
-  .mission-actions {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    max-width: 22rem;
-    margin: 0 auto;
-    flex-shrink: 0;
-  }
-  body.mission-mode .mission-actions {
-    max-width: 100%;
-  }
-  body.mission-mode .mission-reset {
-    flex: 0 1 auto;
-  }
-  .mission-start {
-    width: 100%;
-    font-size: 0.9rem;
-    padding: 0.45rem 0.65rem;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 700;
-    font-family: inherit;
-    box-shadow: 0 3px 8px rgba(33, 158, 188, 0.35);
-  }
-  .mission-start:hover { background: var(--accent-dark); }
-  .mission-start:disabled {
-    display: none;
-  }
-  .mission-reset {
-    width: 100%;
-    font-size: 0.8rem;
-    padding: 0.4rem 0.65rem;
-    background: #fff;
-    color: var(--accent-dark);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    font-family: inherit;
-  }
-  .mission-reset:hover {
-    border-color: var(--accent);
   }
   .panel.game-locked {
     opacity: 0.72;
@@ -698,8 +646,12 @@
         <button type="button" id="lang-zh" data-lang="zh-Hant">繁</button>
       </nav>
       <h1 id="page-title" data-i18n="pageTitle">數學練習：排出位數</h1>
-      <span class="mode-badge practice" id="mode-badge" role="status">練習模式</span>
-      <p id="header-hint">先設定數卡與答案位數，按「開始任務」後作答</p>
+      <nav class="mode-switch" aria-label="Play mode">
+        <button type="button" class="mode-pick active" id="mode-practice">練習</button>
+        <span class="sep" aria-hidden="true">|</span>
+        <button type="button" class="mode-pick" id="mode-mission">太空任務</button>
+      </nav>
+      <p id="header-hint">設定數卡與答案位數，按「提交」檢查答案</p>
     </header>
 
     <aside class="mission-sidebar panel" aria-labelledby="mission-label">
@@ -716,10 +668,6 @@
           </div>
           <div class="mission-rocket" id="mission-rocket" role="img" aria-label="火箭位置">🚀</div>
           <div class="mission-moon" aria-hidden="true">🌕</div>
-        </div>
-        <div class="mission-actions">
-          <button type="button" class="mission-start" id="btn-start-mission">開始任務</button>
-          <button type="button" class="mission-reset" id="btn-exit-mission">退出任務</button>
         </div>
       </div>
     </aside>
@@ -807,9 +755,9 @@
     'zh-Hant': {
       pageTitle: '數學練習：排出位數',
       docTitle: '排出位數 — 數卡練習',
-      modePractice: '練習模式',
-      modeMission: '任務模式',
-      headerHintPractice: '先設定數卡與答案位數，按「開始任務」後作答',
+      modePractice: '練習',
+      modeMission: '太空任務',
+      headerHintPractice: '設定數卡與答案位數，按「提交」檢查答案',
       headerHintMission: '任務進行中：每題提交後會自動換題',
       missionTitle: '太空任務',
       missionHint: '答對向右，答錯向左，10 步到月球',
@@ -868,8 +816,8 @@
       pageTitle: 'Digit arrangement',
       docTitle: 'Digit cards — place value',
       modePractice: 'Practice',
-      modeMission: 'Mission',
-      headerHintPractice: 'Set pool size and answer length, then tap Start mission.',
+      modeMission: 'Space Mission',
+      headerHintPractice: 'Set pool size and answer length, then submit.',
       headerHintMission: 'Mission in progress: a new question loads after each submit.',
       missionTitle: 'Space mission',
       missionHint: 'Correct → move right; wrong → move left. Reach the moon in 10 steps.',
@@ -956,10 +904,10 @@
   let gameStarted = false;
 
   const missionScoreEl = document.getElementById('mission-score');
-  const btnStartMissionEl = document.getElementById('btn-start-mission');
   const btnNewEl = document.getElementById('btn-new');
   const settingsPanelEl = document.getElementById('settings-panel');
-  const modeBadgeEl = document.getElementById('mode-badge');
+  const modePracticeEl = document.getElementById('mode-practice');
+  const modeMissionEl = document.getElementById('mode-mission');
   const headerHintEl = document.getElementById('header-hint');
   const missionRocketEl = document.getElementById('mission-rocket');
   const celebrationEl = document.getElementById('celebration');
@@ -1185,7 +1133,6 @@
   const langEnEl = document.getElementById('lang-en');
   const langZhEl = document.getElementById('lang-zh');
   const btnSubmitEl = document.getElementById('btn-submit');
-  const btnExitMissionEl = document.getElementById('btn-exit-mission');
   let toastTimer = null;
   let answerRevealed = false;
   let roundId = 0;
@@ -1204,12 +1151,17 @@
     missionRocketEl.setAttribute('aria-label', t('rocketAria', { step: rocketStep }));
   }
 
-  function updateModeBadge() {
+  function updateModeSwitch() {
     const inMission = gameStarted;
     document.body.classList.toggle('mission-mode', inMission);
-    modeBadgeEl.textContent = inMission ? t('modeMission') : t('modePractice');
-    modeBadgeEl.classList.toggle('mission', inMission);
-    modeBadgeEl.classList.toggle('practice', !inMission);
+    if (modePracticeEl && modeMissionEl) {
+      modePracticeEl.textContent = t('modePractice');
+      modeMissionEl.textContent = t('modeMission');
+      modePracticeEl.classList.toggle('active', !inMission);
+      modePracticeEl.setAttribute('aria-pressed', inMission ? 'false' : 'true');
+      modeMissionEl.classList.toggle('active', inMission);
+      modeMissionEl.setAttribute('aria-pressed', inMission ? 'true' : 'false');
+    }
     headerHintEl.textContent = inMission ? t('headerHintMission') : t('headerHintPractice');
   }
 
@@ -1221,15 +1173,13 @@
     });
     btnSubmitEl.textContent = t('btnSubmit');
     btnNewEl.textContent = t('btnNew');
-    btnStartMissionEl.textContent = t('btnStartMission');
-    btnExitMissionEl.textContent = t('btnExitMission');
     if (langEnEl && langZhEl) {
       langEnEl.classList.toggle('active', lang === LANG_EN);
       langEnEl.setAttribute('aria-pressed', lang === LANG_EN ? 'true' : 'false');
       langZhEl.classList.toggle('active', lang === LANG_ZH);
       langZhEl.setAttribute('aria-pressed', lang === LANG_ZH ? 'true' : 'false');
     }
-    updateModeBadge();
+    updateModeSwitch();
     updateModeCopy();
     updateMissionUI();
     if (!puzzle) {
@@ -1259,43 +1209,41 @@
     answerDigitsEl.disabled = gameStarted;
     allowShowAnswerEl.disabled = gameStarted;
     btnNewEl.disabled = gameStarted;
-    btnStartMissionEl.disabled = gameStarted;
     if (gameStarted) {
       hideAnswer();
       allowShowAnswerEl.checked = false;
     }
     syncShowAnswerControl();
-    updateModeBadge();
+    updateModeSwitch();
     updateModeCopy();
   }
 
-  function startGame() {
+  function switchToMission() {
     if (gameStarted) return;
     readSettingsFromInputs();
     lastSubmittedRoundId = null;
+    rocketStep = 0;
     gameStarted = true;
     syncGameLockUI();
     loadNextQuestion();
-    showToast(t('toastStartMission'), 'success');
+    updateModeSwitch();
   }
 
-  function loadNextQuestion() {
-    renderPuzzle();
-    lastSubmittedRoundId = null;
-  }
-
-  function endGame() {
-    gameStarted = false;
-    syncGameLockUI();
-  }
-
-  function resetMissionProgress() {
+  function switchToPractice() {
+    if (!gameStarted) return;
     rocketStep = 0;
     updateMissionUI();
     stopFireworks();
     celebrationEl.classList.remove('active');
     celebrationEl.setAttribute('aria-hidden', 'true');
-    endGame();
+    gameStarted = false;
+    syncGameLockUI();
+    updateModeSwitch();
+  }
+
+  function loadNextQuestion() {
+    renderPuzzle();
+    lastSubmittedRoundId = null;
   }
 
   function onMissionAnswer(correct) {
@@ -1860,14 +1808,8 @@
     showAnswer();
   });
 
-  btnStartMissionEl.addEventListener('click', () => {
-    startGame();
-  });
-
-  document.getElementById('btn-exit-mission').addEventListener('click', () => {
-    resetMissionProgress();
-    showToast(t('toastExitMission'), 'info');
-  });
+  if (modePracticeEl) modePracticeEl.addEventListener('click', () => switchToPractice());
+  if (modeMissionEl) modeMissionEl.addEventListener('click', () => switchToMission());
 
   document.getElementById('btn-close-celebration').addEventListener('click', () => {
     stopFireworks();
