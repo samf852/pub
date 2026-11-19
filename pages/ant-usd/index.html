@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--
+  title: ANT-USD
+  description: Hyperliquid XYZ 永續 xyz:ANT 的即時中間價（ANT-USDC／ANT-USD），向官方公開 API 輪詢。
+  -->
+  <title>ANT-USD</title>
+  <meta name="description" content="Hyperliquid XYZ 永續 xyz:ANT 的即時中間價（ANT-USDC／ANT-USD），向官方公開 API 輪詢。">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <style>
+    #gate {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+    }
+
+    .gate-card {
+      width: min(24rem, 100%);
+      background: #fffdf8;
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      padding: 1.6rem 1.35rem 1.35rem;
+      text-align: center;
+    }
+
+    .gate-card .home {
+      display: block;
+      margin: 0 0 1.1rem;
+      text-align: left;
+    }
+
+    .gate-card h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.7rem;
+    }
+
+    .gate-card p {
+      margin: 0 0 1rem;
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .gate-card input[type="password"] {
+      width: 100%;
+      margin: 0 0 0.75rem;
+      padding: 0.8rem 0.9rem;
+      border: 1px solid var(--line);
+      border-radius: 0.8rem;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .gate-card input[type="password"]:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+      border-color: var(--accent);
+    }
+
+    .gate-card button {
+      width: 100%;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.8rem 1rem;
+      font: inherit;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-weight: 650;
+      color: #fff;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    .gate-card button:hover,
+    .gate-card button:focus-visible {
+      background: var(--accent-ink);
+    }
+
+    .gate-error {
+      display: none;
+      margin: 0.85rem 0 0;
+      color: #8f3d32;
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
+
+    .gate-error.show {
+      display: block;
+    }
+
+    #app {
+      display: none;
+    }
+
+    #app.unlocked {
+      display: block;
+    }
+
+    #app .lede {
+      margin-bottom: 0.75rem;
+    }
+
+    .pair {
+      margin: -0.35rem 0 1.1rem;
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .status {
+      margin: 0 0 0.75rem;
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.92rem;
+    }
+
+    .status:empty {
+      display: none;
+    }
+
+    .status span {
+      display: block;
+    }
+
+    .status.bad {
+      color: #8f3d32;
+      font-weight: 650;
+    }
+
+    .px {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: clamp(2.8rem, 8vw, 4.1rem);
+      font-weight: 560;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .change {
+      margin: 0.45rem 0 0;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.05rem;
+    }
+
+    .up {
+      color: var(--accent);
+    }
+
+    .down {
+      color: #8f3d32;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem 1.25rem;
+      margin: 1.35rem 0 0;
+    }
+
+    .stats div {
+      border-top: 1px solid var(--line);
+      padding-top: 0.55rem;
+    }
+
+    .stats dt {
+      margin: 0;
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stats dd {
+      margin: 0.2rem 0 0;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.2rem;
+    }
+
+    .updated {
+      margin: 1.35rem 0 0.35rem;
+      color: var(--muted);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.92rem;
+    }
+
+    .note {
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="gate" role="dialog" aria-labelledby="gate-title">
+    <div class="gate-card">
+      <a class="home" href="../../">← pub</a>
+      <h1 id="gate-title">ANT 報價</h1>
+      <p>輸入密碼先睇 Hyperliquid 上 xyz:ANT 嘅報價。（輕量保護，唔係真・保安）</p>
+      <form id="gate-form" autocomplete="off" onsubmit="return false">
+        <input id="pw" type="password" placeholder="請輸入密碼" inputmode="text" autocomplete="current-password" autocapitalize="off" spellcheck="false" autofocus aria-label="密碼">
+        <button type="submit">開啟報價</button>
+      </form>
+      <p class="gate-error" id="gate-error" role="alert"></p>
+    </div>
+  </div>
+
+  <div id="app" class="wrap">
+    <a class="home" href="../../">← pub</a>
+    <p class="eyebrow">Hyperliquid · XYZ</p>
+    <h1>ANT-USDC</h1>
+    <p class="lede">ANT-USD 永續合約</p>
+    <p class="pair">市場 <code>xyz:ANT</code></p>
+    <p class="status" id="status" role="status">讀取報價中…</p>
+    <p class="px" id="mid" hidden>—</p>
+    <p class="change" id="change"></p>
+    <dl class="stats">
+      <div>
+        <dt>買價</dt>
+        <dd id="bid">—</dd>
+      </div>
+      <div>
+        <dt>賣價</dt>
+        <dd id="ask">—</dd>
+      </div>
+      <div>
+        <dt>標記價</dt>
+        <dd id="mark">—</dd>
+      </div>
+      <div>
+        <dt>預言機價</dt>
+        <dd id="oracle">—</dd>
+      </div>
+      <div>
+        <dt>資金費率</dt>
+        <dd id="funding">—</dd>
+      </div>
+      <div>
+        <dt>未平倉量</dt>
+        <dd id="oi">—</dd>
+      </div>
+    </dl>
+    <p class="updated" id="updated"></p>
+    <p><a href="https://app.hyperliquid.xyz/trade/xyz:ANT" target="_blank" rel="noopener noreferrer">在 Hyperliquid 開啟 xyz:ANT</a></p>
+    <p class="note">中間價約每 2.5 秒向官方 <code>allMids</code>（dex <code>xyz</code>）更新。買價同賣價來自 <code>l2Book</code>。標記價、預言機價、資金費率、未平倉量同昨日價來自 <code>metaAndAssetCtxs</code>，更新得疏啲，以免超出公開 API 權重。呢頁只讀公開報價，唔會連錢包，亦唔會落單。</p>
+  </div>
+
+  <script>
+    (function () {
+      var COIN = "xyz:ANT";
+      var INFO = "https://api.hyperliquid.xyz/info";
+      var EXPECTED = "bb7764ffffc8953676009b51ae113bbe033973b595e1517588b9b835cfb5460e";
+      var STORAGE_KEY = "ant_usd_ok";
+      var MID_MS = 2500;
+      var BOOK_MS = 6000;
+      var CTX_MS = 15000;
+
+      var gate = document.getElementById("gate");
+      var app = document.getElementById("app");
+      var form = document.getElementById("gate-form");
+      var input = document.getElementById("pw");
+      var gateError = document.getElementById("gate-error");
+      var statusEl = document.getElementById("status");
+      var midEl = document.getElementById("mid");
+      var changeEl = document.getElementById("change");
+      var bidEl = document.getElementById("bid");
+      var askEl = document.getElementById("ask");
+      var markEl = document.getElementById("mark");
+      var oracleEl = document.getElementById("oracle");
+      var fundingEl = document.getElementById("funding");
+      var oiEl = document.getElementById("oi");
+      var updatedEl = document.getElementById("updated");
+
+      var state = {
+        mid: null,
+        prev: null,
+        updated: null
+      };
+      var problems = { mid: "", book: "", ctx: "" };
+      var feedStarted = false;
+      var checking = false;
+      var ctxFlight = null;
+      var lastRecover = 0;
+
+      function subtleOk() {
+        return !!(window.crypto && crypto.subtle && typeof crypto.subtle.digest === "function" && typeof TextEncoder === "function");
+      }
+
+      function hexEncode(buffer) {
+        var bytes = new Uint8Array(buffer);
+        var hex = "";
+        for (var i = 0; i < bytes.length; i++) {
+          hex += bytes[i].toString(16).padStart(2, "0");
+        }
+        return hex;
+      }
+
+      function digestHex(text) {
+        if (!subtleOk()) {
+          return Promise.reject(Object.assign(new Error("no-subtle"), { code: "no-subtle" }));
+        }
+        return crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)).then(hexEncode);
+      }
+
+      function showGateError(message) {
+        gateError.textContent = message;
+        gateError.classList.add("show");
+        input.setAttribute("aria-invalid", "true");
+      }
+
+      function clearGateError() {
+        gateError.textContent = "";
+        gateError.classList.remove("show");
+        input.removeAttribute("aria-invalid");
+      }
+
+      function unlock() {
+        gate.style.display = "none";
+        app.classList.add("unlocked");
+        try { sessionStorage.setItem(STORAGE_KEY, "1"); } catch (e) {}
+        if (!feedStarted) {
+          feedStarted = true;
+          startFeed();
+        }
+      }
+
+      try {
+        if (sessionStorage.getItem(STORAGE_KEY) === "1") unlock();
+      } catch (e) {}
+
+      if (!feedStarted && !subtleOk()) {
+        showGateError("呢個瀏覽器唔支援 Web Crypto，無法核對密碼。請用 HTTPS 開啟。");
+      }
+
+      form.addEventListener("submit", function () {
+        if (checking) return;
+        var typed = (input.value || "").trim();
+        checking = true;
+        digestHex(typed).then(function (hex) {
+          checking = false;
+          if (hex === EXPECTED) {
+            clearGateError();
+            unlock();
+          } else {
+            showGateError("密碼唔啱，再試一次");
+            input.focus();
+            input.select();
+          }
+        }).catch(function (error) {
+          checking = false;
+          if (error && error.code === "no-subtle") {
+            showGateError("呢個瀏覽器唔支援 Web Crypto，無法核對密碼。請用 HTTPS 開啟。");
+          } else {
+            showGateError("核對密碼時出錯，請再試一次");
+          }
+          input.focus();
+        });
+      });
+
+      function formatPx(raw) {
+        if (raw == null || raw === "") return "—";
+        var s = String(raw).trim();
+        var neg = s.charAt(0) === "-";
+        if (neg) s = s.slice(1);
+        if (!/^\d+(\.\d+)?$/.test(s)) return String(raw);
+        var bits = s.split(".");
+        var grouped = bits[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return (neg ? "-" : "") + grouped + (bits[1] ? "." + bits[1] : "");
+      }
+
+      function formatQty(raw) {
+        if (raw == null || raw === "") return "—";
+        var n = Number(raw);
+        if (!Number.isFinite(n)) return String(raw);
+        return n.toLocaleString("en-US", { maximumFractionDigits: 2 });
+      }
+
+      function formatFunding(raw) {
+        if (raw == null || raw === "") return "—";
+        var n = Number(raw);
+        if (!Number.isFinite(n)) return String(raw);
+        var pct = n * 100;
+        var abs = Math.abs(pct);
+        var digits = abs === 0 ? 2 : abs >= 1 ? 2 : abs >= 0.01 ? 4 : 6;
+        return (pct > 0 ? "+" : "") + pct.toFixed(digits) + "%";
+      }
+
+      function formatHKT(date) {
+        var text = new Intl.DateTimeFormat("zh-Hant-HK", {
+          timeZone: "Asia/Hong_Kong",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hourCycle: "h23"
+        }).format(date);
+        return text + " HKT";
+      }
+
+      function describe(err) {
+        if (err && err.code === "missing") return "回應沒有 xyz:ANT";
+        if (err && err.status) return "HTTP " + err.status;
+        if (err && err.name === "SyntaxError") return "回應格式不正確";
+        return "連線失敗";
+      }
+
+      function renderStatus() {
+        var parts = [];
+        if (problems.mid) parts.push(problems.mid);
+        if (problems.book) parts.push(problems.book);
+        if (problems.ctx) parts.push(problems.ctx);
+        var stamp = (parts.length ? "bad" : (state.updated ? "ok" : "loading")) + "\n" + parts.join("\n");
+        if (statusEl.dataset.stamp !== stamp) {
+          statusEl.dataset.stamp = stamp;
+          statusEl.replaceChildren();
+          if (!parts.length) {
+            statusEl.textContent = state.updated ? "" : "讀取報價中…";
+          } else {
+            for (var i = 0; i < parts.length; i++) {
+              var line = document.createElement("span");
+              line.textContent = parts[i];
+              statusEl.appendChild(line);
+            }
+          }
+        }
+        statusEl.classList.toggle("bad", parts.length > 0);
+      }
+
+      function renderChange() {
+        var mid = Number(state.mid);
+        var prev = Number(state.prev);
+        if (!Number.isFinite(mid) || !Number.isFinite(prev) || prev === 0) {
+          changeEl.textContent = "";
+          changeEl.className = "change";
+          return;
+        }
+        var pct = ((mid - prev) / prev) * 100;
+        changeEl.textContent = (pct > 0 ? "+" : "") + pct.toFixed(2) + "% 較昨日 " + formatPx(state.prev);
+        changeEl.className = "change " + (pct > 0 ? "up" : pct < 0 ? "down" : "");
+      }
+
+      function renderUpdated() {
+        updatedEl.textContent = state.updated ? "最後更新 " + formatHKT(state.updated) : "";
+      }
+
+      function applyMid(raw) {
+        state.mid = raw;
+        state.updated = new Date();
+        midEl.hidden = false;
+        midEl.textContent = formatPx(raw);
+        renderChange();
+        renderUpdated();
+      }
+
+      function applyCtx(ctx) {
+        state.prev = ctx.prevDayPx == null ? null : ctx.prevDayPx;
+        markEl.textContent = formatPx(ctx.markPx);
+        oracleEl.textContent = formatPx(ctx.oraclePx);
+        fundingEl.textContent = formatFunding(ctx.funding);
+        oiEl.textContent = formatQty(ctx.openInterest);
+        if (state.mid == null && ctx.midPx != null && ctx.midPx !== "") applyMid(String(ctx.midPx));
+        else renderChange();
+      }
+
+      function postInfo(body) {
+        return fetch(INFO, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(body),
+          cache: "no-store",
+          credentials: "omit"
+        }).then(function (res) {
+          if (!res.ok) {
+            var error = new Error("HTTP " + res.status);
+            error.status = res.status;
+            throw error;
+          }
+          return res.json();
+        });
+      }
+
+      function parseAntCtx(payload) {
+        if (!Array.isArray(payload) || payload.length < 2) {
+          var error = new Error("bad ctx");
+          error.name = "SyntaxError";
+          throw error;
+        }
+        var universe = payload[0] && payload[0].universe;
+        var assets = payload[1];
+        if (!Array.isArray(universe) || !Array.isArray(assets)) {
+          var bad = new Error("bad ctx");
+          bad.name = "SyntaxError";
+          throw bad;
+        }
+        for (var i = 0; i < universe.length; i++) {
+          if (universe[i] && universe[i].name === COIN) return assets[i] || null;
+        }
+        return null;
+      }
+
+      function loadCtx() {
+        if (ctxFlight) return ctxFlight;
+        ctxFlight = postInfo({ type: "metaAndAssetCtxs", dex: "xyz" })
+          .then(parseAntCtx)
+          .finally(function () { ctxFlight = null; });
+        return ctxFlight;
+      }
+
+      function fetchMid() {
+        return postInfo({ type: "allMids", dex: "xyz" }).then(function (data) {
+          var mid = data && typeof data === "object" && !Array.isArray(data) ? data[COIN] : undefined;
+          if (mid == null || mid === "") {
+            var missing = new Error("missing");
+            missing.code = "missing";
+            throw missing;
+          }
+          problems.mid = "";
+          applyMid(String(mid));
+          renderStatus();
+        }).catch(function (err) {
+          return recoverMid(err);
+        });
+      }
+
+      function recoverMid(err) {
+        var now = Date.now();
+        if (now - lastRecover < CTX_MS) {
+          problems.mid = "中間價讀取失敗（" + describe(err) + "），會繼續重試。";
+          renderStatus();
+          return;
+        }
+        lastRecover = now;
+        return loadCtx().then(function (ctx) {
+          if (ctx && ctx.midPx != null && ctx.midPx !== "") {
+            problems.mid = "";
+            problems.ctx = "";
+            applyCtx(ctx);
+            applyMid(String(ctx.midPx));
+            renderStatus();
+            return;
+          }
+          problems.mid = "中間價讀取失敗（" + describe(err) + "），會繼續重試。";
+          renderStatus();
+        }).catch(function () {
+          problems.mid = "中間價讀取失敗（" + describe(err) + "），會繼續重試。";
+          renderStatus();
+        });
+      }
+
+      function fetchBook() {
+        return postInfo({ type: "l2Book", coin: COIN }).then(function (book) {
+          var levels = book && book.levels;
+          var bid = levels && levels[0] && levels[0][0] && levels[0][0].px;
+          var ask = levels && levels[1] && levels[1][0] && levels[1][0].px;
+          if (bid == null && ask == null) {
+            problems.book = "訂單簿暫時沒有買賣價，會繼續重試。";
+            renderStatus();
+            return;
+          }
+          problems.book = "";
+          if (bid != null) bidEl.textContent = formatPx(bid);
+          if (ask != null) askEl.textContent = formatPx(ask);
+          renderStatus();
+        }).catch(function (err) {
+          problems.book = "買賣價讀取失敗（" + describe(err) + "），會繼續重試。";
+          renderStatus();
+        });
+      }
+
+      function fetchCtx() {
+        return loadCtx().then(function (ctx) {
+          if (!ctx) {
+            problems.ctx = "標記價讀取失敗（回應沒有 xyz:ANT），會繼續重試。";
+            renderStatus();
+            return;
+          }
+          problems.ctx = "";
+          applyCtx(ctx);
+          renderStatus();
+        }).catch(function (err) {
+          problems.ctx = "標記價同資金費率讀取失敗（" + describe(err) + "），會繼續重試。";
+          renderStatus();
+        });
+      }
+
+      function every(ms, fn) {
+        (function run() {
+          var start = Date.now();
+          Promise.resolve().then(fn).catch(function () {}).then(function () {
+            setTimeout(run, Math.max(0, ms - (Date.now() - start)));
+          });
+        })();
+      }
+
+      function startFeed() {
+        every(MID_MS, fetchMid);
+        every(BOOK_MS, fetchBook);
+        every(CTX_MS, fetchCtx);
+      }
+    })();
+  </script>
+</body>
+</html>
